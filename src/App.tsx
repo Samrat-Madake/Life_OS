@@ -13,7 +13,7 @@ import { CalendarView } from "./views/CalendarView";
 import { GoalsView } from "./views/GoalsView";
 
 export default function App() {
-  const { theme, setTheme, state, reset, user, logout, isSyncing } = useStore();
+  const { theme, setTheme, state, reset, user, logout, isSyncing, syncError } = useStore();
   const [view, setView] = useState<View>("overview");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -196,8 +196,8 @@ export default function App() {
                   <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {user.name}
                   </div>
-                  <div style={{ fontSize: 10, color: isSyncing ? "var(--accent)" : "var(--text-muted)" }}>
-                    {isSyncing ? "● Syncing..." : "☁ Cloud active"}
+                  <div style={{ fontSize: 10, color: isSyncing ? "var(--accent)" : syncError ? "#ef4444" : "var(--text-muted)" }}>
+                    {isSyncing ? "● Syncing..." : syncError ? "⚠ Offline" : "☁ Cloud active"}
                   </div>
                 </div>
               )}
@@ -270,15 +270,21 @@ export default function App() {
               <span
                 className="badge"
                 style={{
-                  background: isSyncing ? "rgba(99, 102, 241, 0.2)" : "rgba(16, 185, 129, 0.15)",
-                  color: isSyncing ? "var(--accent)" : "#10b981",
+                  background: isSyncing
+                    ? "rgba(99, 102, 241, 0.2)"
+                    : syncError
+                    ? "rgba(239, 68, 68, 0.15)"
+                    : "rgba(16, 185, 129, 0.15)",
+                  color: isSyncing ? "var(--accent)" : syncError ? "#ef4444" : "#10b981",
                   fontSize: 11,
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4
                 }}
+                title={syncError || (isSyncing ? "Syncing..." : "Saved to MongoDB Cloud")}
               >
-                <span>{isSyncing ? "↻" : "☁"}</span> {isSyncing ? "Syncing..." : "Saved to Cloud"}
+                <span>{isSyncing ? "↻" : syncError ? "⚠" : "☁"}</span>
+                {isSyncing ? "Syncing..." : syncError ? "Sync Offline" : "Saved to Cloud"}
               </span>
             )}
           </div>

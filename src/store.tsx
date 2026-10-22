@@ -39,6 +39,7 @@ type Store = {
   // Auth & Cloud Sync
   user: AuthUser | null;
   isSyncing: boolean;
+  syncError: string | null;
   login: (email: string, pass: string) => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
   logout: () => void;
@@ -74,6 +75,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<"dark" | "light">(() => (localStorage.getItem(THEME_KEY) as any) || "dark");
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const persistRef = useRef<number | null>(null);
   const cloudSyncRef = useRef<number | null>(null);
@@ -96,9 +98,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (cloudSyncRef.current) window.clearTimeout(cloudSyncRef.current);
     cloudSyncRef.current = window.setTimeout(async () => {
       setIsSyncing(true);
-      await apiClient.syncCloudState(state);
-      setIsSyncing(false);
-    }, 800);
+      try {
+        const ok = await apiClient.syncCloudState(state);
+        if (ok) {
+          setSyncError(null);
+        } else {
+          setSyncError("Sync failed (server offline or not reachable)");
+        }
+      } catch (err: any) {
+        setSyncError(err?.message || "Sync error");
+      } finally {
+        setIsSyncing(false);
+      }
+    }, 600);
   }, [state, user]);
 
   // Restore authenticated user on mount & pull cloud state
@@ -157,6 +169,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setTheme,
     user,
     isSyncing,
+    syncError,
     login,
     register,
     logout,
