@@ -3,6 +3,7 @@ import { useStore } from "./store";
 import { uid } from "./utils";
 import { nav, type View } from "./components/constants";
 import { CommandPalette } from "./components/CommandPalette";
+import { AuthModal } from "./components/AuthModal";
 import { OverviewView } from "./views/OverviewView";
 import { TasksView } from "./views/TasksView";
 import { HabitsView } from "./views/HabitsView";
@@ -12,11 +13,12 @@ import { CalendarView } from "./views/CalendarView";
 import { GoalsView } from "./views/GoalsView";
 
 export default function App() {
-  const { theme, setTheme, state, reset } = useStore();
+  const { theme, setTheme, state, reset, user, logout, isSyncing } = useStore();
   const [view, setView] = useState<View>("overview");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [palette, setPalette] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [q, setQ] = useState("");
   const [toasts, setToasts] = useState<{ id: string; message: string }[]>([]);
 
@@ -159,7 +161,69 @@ export default function App() {
         </nav>
 
         <div style={{ padding: 10, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 8 }}>
-          {!collapsed && <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, letterSpacing: .06 + "em" }}>SYSTEM</div>}
+          {!collapsed && <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, letterSpacing: .06 + "em" }}>ACCOUNT & CLOUD</div>}
+          {user ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: collapsed ? "6px 0" : "8px 10px",
+                borderRadius: 8,
+                background: "var(--bg-elev1)",
+                justifyContent: collapsed ? "center" : "flex-start"
+              }}
+            >
+              <div
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, var(--accent), #8b5cf6)",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  flexShrink: 0
+                }}
+              >
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              {!collapsed && (
+                <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {user.name}
+                  </div>
+                  <div style={{ fontSize: 10, color: isSyncing ? "var(--accent)" : "var(--text-muted)" }}>
+                    {isSyncing ? "● Syncing..." : "☁ Cloud active"}
+                  </div>
+                </div>
+              )}
+              {!collapsed && (
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => { logout(); addToast("Signed out"); }}
+                  title="Sign out"
+                  style={{ padding: "2px 6px", fontSize: 11 }}
+                >
+                  🚪
+                </button>
+              )}
+            </div>
+          ) : (
+            <button
+              className="btn btn-primary btn-sm"
+              style={{ justifyContent: collapsed ? "center" : "flex-start" }}
+              onClick={() => setShowAuthModal(true)}
+              title="Sign In / Register"
+            >
+              ☁ {!collapsed && "Sign In / Sync"}
+            </button>
+          )}
+
+          {!collapsed && <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, letterSpacing: .06 + "em", marginTop: 4 }}>SYSTEM</div>}
           <button
             className="btn btn-sm"
             style={{ justifyContent: collapsed ? "center" : "flex-start" }}
@@ -168,7 +232,11 @@ export default function App() {
           >
             ↺ {!collapsed && "Reset Demo Data"}
           </button>
-          {!collapsed && <div style={{ fontSize: 11, color: "var(--text-faint)" }}>v1.0 • Local-first • {state.tasks.length} tasks</div>}
+          {!collapsed && (
+            <div style={{ fontSize: 11, color: "var(--text-faint)" }}>
+              {user ? `Cloud: ${user.email}` : "v1.0 • Local-first"} • {state.tasks.length} tasks
+            </div>
+          )}
         </div>
       </aside>
 
@@ -198,6 +266,21 @@ export default function App() {
             <span className="badge" style={{ background: "var(--bg-elev2)", color: "var(--text-muted)" }}>
               {new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
             </span>
+            {user && (
+              <span
+                className="badge"
+                style={{
+                  background: isSyncing ? "rgba(99, 102, 241, 0.2)" : "rgba(16, 185, 129, 0.15)",
+                  color: isSyncing ? "var(--accent)" : "#10b981",
+                  fontSize: 11,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4
+                }}
+              >
+                <span>{isSyncing ? "↻" : "☁"}</span> {isSyncing ? "Syncing..." : "Saved to Cloud"}
+              </span>
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button className="btn" onClick={() => setPalette(true)} style={{ gap: 8 }}>
@@ -210,6 +293,40 @@ export default function App() {
             <button className="btn" aria-label="Toggle theme" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title="Toggle theme">
               {theme === "dark" ? "☀ Light" : "◑ Dark"}
             </button>
+            {user ? (
+              <button
+                className="btn btn-sm"
+                onClick={() => { logout(); addToast("Signed out"); }}
+                title={`Signed in as ${user.name} (${user.email}). Click to sign out.`}
+                style={{ gap: 6 }}
+              >
+                <span
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    background: "var(--accent)",
+                    color: "#fff",
+                    fontSize: 10,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700
+                  }}
+                >
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+                <span>Sign Out</span>
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowAuthModal(true)}
+                style={{ gap: 6 }}
+              >
+                ☁ Sign In
+              </button>
+            )}
           </div>
         </header>
 
@@ -229,6 +346,14 @@ export default function App() {
 
         {/* Command palette */}
         {palette && <CommandPalette onClose={() => setPalette(false)} onNav={(v) => { setView(v as View); setPalette(false); }} />}
+
+        {/* Authentication Modal */}
+        {showAuthModal && (
+          <AuthModal
+            onClose={() => setShowAuthModal(false)}
+            onToast={addToast}
+          />
+        )}
 
         {/* Toasts */}
         {toasts.map((t, i) => (

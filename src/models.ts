@@ -102,4 +102,14 @@ export type AppState = {
   currency:string // INR
 };
 
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  preferences?: {
+    theme?: "dark" | "light";
+    currency?: string;
+  };
+};
+
 export type ActivityItem = { id:string; time:string; label:string; sub?:string; kind:"task"|"habit"|"focus"|"finance"|"calendar"|"goal" };
