@@ -55,6 +55,8 @@ router.post("/sync", authMiddleware, async (req: AuthRequest, res: Response): Pr
       currency
     } = req.body;
 
+    console.log(`[CloudSync] Received state for user ${req.userId}: ${tasks?.length || 0} tasks, ${habits?.length || 0} habits, ${transactions?.length || 0} transactions`);
+
     const data = await UserData.findOneAndUpdate(
       { userId: req.userId },
       {

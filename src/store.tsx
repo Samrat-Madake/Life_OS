@@ -77,6 +77,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const persistRef = useRef<number | null>(null);
   const cloudSyncRef = useRef<number | null>(null);
+  const isHydratedRef = useRef<boolean>(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -89,15 +90,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     persistRef.current = window.setTimeout(() => localStorage.setItem(KEY, JSON.stringify(state)), 200);
   }, [state]);
 
-  // Cloud sync debounced when authenticated
+  // Cloud sync debounced when authenticated and hydrated
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isHydratedRef.current) return;
     if (cloudSyncRef.current) window.clearTimeout(cloudSyncRef.current);
     cloudSyncRef.current = window.setTimeout(async () => {
       setIsSyncing(true);
       await apiClient.syncCloudState(state);
       setIsSyncing(false);
-    }, 1200);
+    }, 800);
   }, [state, user]);
 
   // Restore authenticated user on mount & pull cloud state
@@ -107,10 +108,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (res && res.user) {
         setUser(res.user);
         const cloudState = await apiClient.fetchCloudState();
-        if (cloudState && cloudState.tasks) {
+        if (cloudState && Array.isArray(cloudState.tasks)) {
           setState(cloudState);
+          localStorage.setItem(KEY, JSON.stringify(cloudState));
         }
       }
+      isHydratedRef.current = true;
     }
     initAuth();
   }, []);
@@ -119,10 +122,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const res = await apiClient.login(email, pass);
     setToken(res.token);
     setUser(res.user);
+    isHydratedRef.current = false;
     const cloudState = await apiClient.fetchCloudState();
-    if (cloudState && cloudState.tasks) {
+    if (cloudState && Array.isArray(cloudState.tasks)) {
       setState(cloudState);
+      localStorage.setItem(KEY, JSON.stringify(cloudState));
     }
+    isHydratedRef.current = true;
   };
 
   const register = async (name: string, email: string, pass: string) => {
@@ -133,11 +139,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const emptyState = buildEmptyState();
     setState(emptyState);
     localStorage.setItem(KEY, JSON.stringify(emptyState));
+    isHydratedRef.current = true;
+    // Push empty state to cloud immediately
+    await apiClient.syncCloudState(emptyState);
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
+    isHydratedRef.current = false;
   };
 
   const apiValue = useMemo<Store>(() => ({
