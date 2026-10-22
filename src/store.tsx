@@ -1,0 +1,169 @@
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import type { AppState, Transaction, Task, HabitLog, CalendarEvent, FocusSession, Goal } from "./models";
+import { buildSeed } from "./seed";
+
+const KEY="lifeos:v1";
+const THEME_KEY="lifeos:theme";
+
+function load():AppState{
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw) return buildSeed();
+    const parsed=JSON.parse(raw);
+    // graceful fallback: if missing keys, merge with seed
+    const seed=buildSeed();
+    return {...seed, ...parsed,
+      tasks: Array.isArray(parsed.tasks)?parsed.tasks:seed.tasks,
+      habits: Array.isArray(parsed.habits)?parsed.habits:seed.habits,
+      habitLogs: Array.isArray(parsed.habitLogs)?parsed.habitLogs:seed.habitLogs,
+      transactions: Array.isArray(parsed.transactions)?parsed.transactions:seed.transactions,
+      budgets: Array.isArray(parsed.budgets)?parsed.budgets:seed.budgets,
+      events: Array.isArray(parsed.events)?parsed.events:seed.events,
+      goals: Array.isArray(parsed.goals)?parsed.goals:seed.goals,
+      focusSessions: Array.isArray(parsed.focusSessions)?parsed.focusSessions:seed.focusSessions,
+    };
+  }catch{ return buildSeed(); }
+}
+
+type Store = {
+  state:AppState
+  setState:React.Dispatch<React.SetStateAction<AppState>>
+  reset:()=>void
+  theme:"dark"|"light"; setTheme:(t:"dark"|"light")=>void
+  // actions
+  addTask:(t:Task)=>void
+  updateTask:(id:string, patch:Partial<Task>)=>void
+  deleteTask:(id:string)=>void
+  toggleTask:(id:string)=>void
+  addTransaction:(t:Transaction)=>void
+  updateTransaction:(id:string, patch:Partial<Transaction>)=>void
+  deleteTransaction:(id:string)=>void
+  addEvent:(e:CalendarEvent)=>void
+  updateEvent:(id:string, patch:Partial<CalendarEvent>)=>void
+  deleteEvent:(id:string)=>void
+  toggleHabit:(habitId:string, date:string)=>void
+  addHabit:(h:any)=>void
+  updateHabit:(id:string, patch:any)=>void
+  deleteHabit:(id:string)=>void
+  addGoal:(g:Goal)=>void
+  updateGoal:(id:string, patch:Partial<Goal>)=>void
+  deleteGoal:(id:string)=>void
+  toggleMilestone:(goalId:string, milestoneId:string)=>void
+  addFocusSession:(s:FocusSession)=>void
+  upsertFocusSession:(s:FocusSession)=>void
+};
+
+const Ctx=createContext<Store>(null as any);
+
+export function StoreProvider({children}:{children:React.ReactNode}){
+  const [state,setState]=useState<AppState>(()=>load());
+  const [theme,setTheme]=useState<"dark"|"light">(()=> (localStorage.getItem(THEME_KEY) as any) || "dark");
+  const persistRef=useRef<number | null>(null);
+
+  useEffect(()=>{
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+  },[theme]);
+
+  useEffect(()=>{
+    if(persistRef.current) window.clearTimeout(persistRef.current);
+    persistRef.current=window.setTimeout(()=> localStorage.setItem(KEY, JSON.stringify(state)), 200);
+  },[state]);
+
+  // handle visibility: no special but keep
+  useEffect(()=>{
+    const onVis=()=>{ /* no corruption; state is persisted */ };
+    document.addEventListener("visibilitychange", onVis);
+    return ()=> document.removeEventListener("visibilitychange", onVis);
+  },[]);
+
+  const api = useMemo<Store>(()=>({
+    state,setState,
+    theme,setTheme,
+    reset(){ const s=buildSeed(); setState(s); localStorage.setItem(KEY, JSON.stringify(s)); },
+    addTask(t){ setState(s=>({...s, tasks:[t,...s.tasks]}))},
+    updateTask(id,patch){ setState(s=>({...s, tasks:s.tasks.map(x=> x.id===id? {...x,...patch}:x)}))},
+    deleteTask(id){ setState(s=>{
+      const t=s.tasks.find(x=>x.id===id);
+      let goals=s.goals;
+      if(t && t.status==="done" && t.goalId){
+        goals=s.goals.map(g=>{
+          if(g.id!==t.goalId || g.targetValue==null) return g;
+          return {...g, currentValue: Math.max(0, (g.currentValue||0)-1)};
+        });
+      }
+      return {...s, tasks:s.tasks.filter(x=>x.id!==id), goals};
+    })},
+    toggleTask(id){
+      setState(s=>{
+        const t=s.tasks.find(x=>x.id===id); if(!t) return s;
+        const now=new Date().toISOString();
+        const becomingDone = t.status!=="done";
+        const next = becomingDone ? {...t,status:"done" as const, completedAt:now} : {...t,status:"todo" as const, completedAt:null};
+        let goals=s.goals;
+        if(t.goalId){
+          goals=s.goals.map(g=>{
+            if(g.id!==t.goalId || g.targetValue==null) return g;
+            const cur=Math.max(0, g.currentValue||0);
+            const nextVal = becomingDone ? Math.min(cur+1, g.targetValue) : Math.max(0, cur-1);
+            return {...g, currentValue: nextVal};
+          });
+        }
+        return {...s, tasks:s.tasks.map(x=>x.id===id?next:x), goals};
+      });
+    },
+    addTransaction(t){ setState(s=>({...s, transactions:[t,...s.transactions]}))},
+    updateTransaction(id,patch){ setState(s=>({...s, transactions:s.transactions.map(x=> x.id===id? {...x,...patch}:x)}))},
+    deleteTransaction(id){ setState(s=>({...s, transactions:s.transactions.filter(x=>x.id!==id)}))},
+    addEvent(e){ setState(s=>{
+      let tasks=s.tasks;
+      if(e.taskId){
+        tasks=s.tasks.map(x=> x.id===e.taskId ? {...x, scheduledAt:`${e.date}T${e.start}`} : x);
+      }
+      return {...s, events:[...s.events, e], tasks};
+    })},
+    updateEvent(id,patch){ setState(s=>{
+      const prev=s.events.find(x=>x.id===id);
+      let tasks=s.tasks;
+      if(prev?.taskId && (patch.date!==undefined || patch.start!==undefined || patch.end!==undefined)){
+        const date=patch.date!==undefined?patch.date:prev.date;
+        const start=patch.start!==undefined?patch.start:prev.start;
+        tasks=s.tasks.map(x=> x.id===prev.taskId ? {...x, scheduledAt:`${date}T${start}`} : x);
+      }
+      return {...s, events:s.events.map(x=> x.id===id? {...x,...patch}:x), tasks};
+    })},
+    deleteEvent(id){ setState(s=>{
+      const e=s.events.find(x=>x.id===id);
+      let tasks=s.tasks;
+      if(e?.taskId){
+        tasks=s.tasks.map(x=> x.id===e.taskId ? {...x, scheduledAt:null} : x);
+      }
+      return {...s, events:s.events.filter(x=>x.id!==id), tasks};
+    })},
+    toggleHabit(habitId,date){
+      setState(s=>{
+        const key=habitId+"|"+date;
+        const exists=s.habitLogs.find(l=> l.habitId===habitId && l.date===date);
+        if(exists) return {...s, habitLogs:s.habitLogs.filter(l=> !(l.habitId===habitId && l.date===date))};
+        // prevent duplicate
+        if(s.habitLogs.find(l=> l.habitId===habitId && l.date===date)) return s;
+        return {...s, habitLogs:[...s.habitLogs, {habitId, date}]};
+      });
+    },
+    addHabit(h){ setState(s=>({...s, habits:[h,...s.habits]}))},
+    updateHabit(id,patch){ setState(s=>({...s, habits:s.habits.map(x=> x.id===id? {...x,...patch}:x)}))},
+    deleteHabit(id){ setState(s=>({...s, habits:s.habits.filter(x=>x.id!==id), habitLogs:s.habitLogs.filter(l=>l.habitId!==id)}))},
+    addGoal(g){ setState(s=>({...s, goals:[g,...s.goals]}))},
+    updateGoal(id,patch){ setState(s=>({...s, goals:s.goals.map(x=> x.id===id? {...x,...patch}:x)}))},
+    deleteGoal(id){ setState(s=>({...s, goals:s.goals.filter(x=>x.id!==id)}))},
+    toggleMilestone(goalId, milestoneId){
+      setState(s=>({...s, goals:s.goals.map(g=> g.id!==goalId? g : {...g, milestones: g.milestones.map(m=> m.id===milestoneId? {...m, completed:!m.completed}:m)})}))
+    },
+    addFocusSession(sesh){ setState(s=>({...s, focusSessions:[sesh,...s.focusSessions]}))},
+    upsertFocusSession(sesh){ setState(s=>({...s, focusSessions:[sesh, ...s.focusSessions.filter(x=>x.id!==sesh.id)]}))},
+  }),[state, theme]);
+
+  return <Ctx.Provider value={api}>{children}</Ctx.Provider>
+}
+
+export function useStore(){ return useContext(Ctx); }
