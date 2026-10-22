@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useStore } from "./store"
 import { fmtINR, isOverdue, todayISO, minutesToHM, hasConflict, streakForHabit, toMinutes, uid } from "./utils"
 import type { Task, Priority, TaskStatus, CalendarEvent } from "./models"
+import { ambientPlayer, SOUND_OPTIONS, type AmbientSound } from "./audio"
 
 // ===== helpers =====
 const priorityColor:Record<Priority,string>={ low:"#9a9ab0", medium:"#7c6cff", high:"#f59e0b", urgent:"#ef4444" }
@@ -876,6 +877,30 @@ function FocusStudio({onToast}:{onToast:(s:string)=>void}){
   const intervalRef=useRef<number|null>(null);
   const totalForMode = (mode==="focus"? focusM: breakM)*60;
 
+  const [ambient, setAmbient] = useState<AmbientSound>("none");
+  const [ambientVol, setAmbientVol] = useState<number>(0.5);
+
+  // ambient audio sync with timer and mode
+  useEffect(() => {
+    if (running && mode === "focus" && ambient !== "none") {
+      ambientPlayer.play(ambient, ambientVol);
+    } else {
+      ambientPlayer.pause();
+    }
+  }, [running, mode, ambient, ambientVol]);
+
+  // volume updates live
+  useEffect(() => {
+    ambientPlayer.setVolume(ambientVol);
+  }, [ambientVol]);
+
+  // cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      ambientPlayer.stop();
+    };
+  }, []);
+
   // avoid duplicate timers on nav: cleanup on unmount / mode switch
   useEffect(()=>{
     // reset seconds when durations change if not running
@@ -992,7 +1017,69 @@ function FocusStudio({onToast}:{onToast:(s:string)=>void}){
               </select>
             </label>
           </div>
-          <div style={{fontSize:11, color:"var(--text-faint)", marginTop:8}}>Timer survives navigation and cleans up correctly — no duplicate intervals.</div>
+          {/* Ambient Sound Selector */}
+          <div style={{marginTop:16, paddingTop:14, borderTop:"1px solid var(--border)", textAlign:"left"}}>
+            <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8}}>
+              <span style={{fontSize:12, fontWeight:800, color:"var(--text)"}}>🎧 Ambient Sound</span>
+              {ambient !== "none" && (
+                <span className="badge" style={{background:"var(--accent-elev)", color:"var(--accent)", fontSize:11, padding:"2px 8px"}}>
+                  {running && mode === "focus" ? "Playing" : "Ready"}
+                </span>
+              )}
+            </div>
+
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(68px, 1fr))", gap:6}}>
+              {SOUND_OPTIONS.map(s => {
+                const active = ambient === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setAmbient(s.id)}
+                    style={{
+                      display:"flex",
+                      flexDirection:"column",
+                      alignItems:"center",
+                      justifyContent:"center",
+                      gap:4,
+                      padding:"8px 6px",
+                      borderRadius:8,
+                      border: "1px solid " + (active ? "var(--accent)" : "var(--border)"),
+                      background: active ? "var(--bg-elev2)" : "transparent",
+                      color: active ? "var(--text)" : "var(--text-muted)",
+                      cursor:"pointer",
+                      fontSize:11,
+                      fontWeight: active ? 800 : 600,
+                      transition:"all .15s ease"
+                    }}
+                  >
+                    <span style={{fontSize:16}}>{s.icon}</span>
+                    <span>{s.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {ambient !== "none" && (
+              <div style={{display:"flex", alignItems:"center", gap:8, marginTop:10}}>
+                <span style={{fontSize:11, fontWeight:700, color:"var(--text-muted)"}}>Volume</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={ambientVol}
+                  onChange={e => setAmbientVol(Number(e.target.value))}
+                  style={{flex:1}}
+                />
+                <span className="mono" style={{fontSize:11, fontWeight:800, minWidth:32, textAlign:"right"}}>
+                  {Math.round(ambientVol * 100)}%
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div style={{fontSize:11, color:"var(--text-faint)", marginTop:12}}>Plays automatically when focus timer starts • Pauses on break or pause.</div>
         </div>
 
         <div style={{display:"flex", flexDirection:"column", gap:12}}>
