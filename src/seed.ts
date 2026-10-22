@@ -8,19 +8,72 @@ export function buildSeed():AppState{
   return {
     currency:"INR",
     tasks:[
-      {id:"t1", title:"Finish LifeOS overview dashboard", description:"Polish metrics & activity feed", status:"doing", priority:"high", category:"Work", dueDate:today, createdAt:daysOffset(-4)},
+      {
+        id:"t1",
+        title:"Finish LifeOS overview dashboard",
+        description:"Polish metrics & activity feed",
+        status:"doing",
+        priority:"high",
+        category:"Work",
+        dueDate:today,
+        createdAt:daysOffset(-4),
+        subtasks:[
+          {id:"st1", title:"Polish hero metrics layout", completed:true},
+          {id:"st2", title:"Wire ambient sound selector", completed:true},
+          {id:"st3", title:"Verify mobile sidebar collapse", completed:false}
+        ]
+      },
       {id:"t2", title:"Pay electricity bill", description:"Due before late fee", status:"todo", priority:"urgent", category:"Finance", dueDate:daysOffset(-1), createdAt:daysOffset(-6)}, // overdue
       {id:"t3", title:"Morning run — 5km", status:"done", priority:"medium", category:"Health", dueDate:daysOffset(0), createdAt:daysOffset(-5), completedAt: today+"T08:30:00"},
-      {id:"t4", title:"Review Q1 budget categories", status:"todo", priority:"high", category:"Finance", dueDate:daysOffset(1), createdAt:daysOffset(-2)},
+      {
+        id:"t4",
+        title:"Review Q1 budget categories",
+        status:"todo",
+        priority:"high",
+        category:"Finance",
+        dueDate:daysOffset(1),
+        createdAt:daysOffset(-2),
+        subtasks:[
+          {id:"st4", title:"Collect bank & credit card statements", completed:true},
+          {id:"st5", title:"Calculate discretionary spend", completed:false},
+          {id:"st6", title:"Adjust monthly category limits", completed:false}
+        ]
+      },
       {id:"t5", title:"Design kanban drag-and-drop", status:"doing", priority:"medium", category:"Work", dueDate:daysOffset(2), createdAt:daysOffset(-3)},
       {id:"t6", title:"Read Deep Work ch.3", status:"todo", priority:"low", category:"Learning", dueDate:daysOffset(3), createdAt:daysOffset(-3)},
-      {id:"t7", title:"Grocery restock & meal prep", status:"todo", priority:"medium", category:"Home", dueDate:daysOffset(0), createdAt:daysOffset(-1)},
+      {
+        id:"t7",
+        title:"Grocery restock & meal prep",
+        status:"todo",
+        priority:"medium",
+        category:"Home",
+        dueDate:daysOffset(0),
+        createdAt:daysOffset(-1),
+        subtasks:[
+          {id:"st7", title:"Check pantry inventory", completed:true},
+          {id:"st8", title:"Order vegetables & dairy", completed:false},
+          {id:"st9", title:"Prep lunches for the week", completed:false}
+        ]
+      },
       {id:"t8", title:"Call parents — weekend plan", status:"todo", priority:"low", category:"Personal", dueDate:daysOffset(5), createdAt:daysOffset(-2)},
       {id:"t9", title:"Fix calendar conflict logic", status:"done", priority:"high", category:"Work", dueDate:daysOffset(-2), createdAt:daysOffset(-7), completedAt: daysOffset(-1)+"T16:00:00"},
       {id:"t10", title:"Doctor appointment follow-up", status:"todo", priority:"urgent", category:"Health", dueDate:daysOffset(-2), createdAt:daysOffset(-4)}, // overdue urgent
       {id:"t11", title:"Update portfolio site", status:"done", priority:"medium", category:"Work", dueDate:daysOffset(-5), createdAt:daysOffset(-10), completedAt: daysOffset(-4)+"T10:00:00"},
       {id:"t12", title:"Plan Goa trip itinerary", status:"todo", priority:"low", category:"Personal", dueDate:daysOffset(10), createdAt:daysOffset(-1)},
-      {id:"t13", title:"Prepare sprint demo slides", status:"todo", priority:"high", category:"Work", dueDate:daysOffset(1), createdAt:daysOffset(-2)},
+      {
+        id:"t13",
+        title:"Prepare sprint demo slides",
+        status:"todo",
+        priority:"high",
+        category:"Work",
+        dueDate:daysOffset(1),
+        createdAt:daysOffset(-2),
+        subtasks:[
+          {id:"st10", title:"Outline key milestones reached", completed:false},
+          {id:"st11", title:"Record short 60s demo GIF", completed:false},
+          {id:"st12", title:"Review slides with team lead", completed:false}
+        ]
+      },
       {id:"t14", title:"Water plants & balcony clean", status:"done", priority:"low", category:"Home", dueDate:daysOffset(-1), createdAt:daysOffset(-3), completedAt: daysOffset(0)+"T07:00:00"},
     ],
     habits:[

@@ -35,6 +35,7 @@ type Store = {
   updateTask:(id:string, patch:Partial<Task>)=>void
   deleteTask:(id:string)=>void
   toggleTask:(id:string)=>void
+  toggleSubtask:(taskId:string, subtaskId:string)=>void
   addTransaction:(t:Transaction)=>void
   updateTransaction:(id:string, patch:Partial<Transaction>)=>void
   deleteTransaction:(id:string)=>void
@@ -110,6 +111,21 @@ export function StoreProvider({children}:{children:React.ReactNode}){
           });
         }
         return {...s, tasks:s.tasks.map(x=>x.id===id?next:x), goals};
+      });
+    },
+    toggleSubtask(taskId, subtaskId){
+      setState(s=>{
+        const t = s.tasks.find(x=>x.id===taskId);
+        if(!t || !t.subtasks) return s;
+        const updatedSubtasks = t.subtasks.map(sub=> sub.id===subtaskId ? {...sub, completed:!sub.completed} : sub);
+        const allDone = updatedSubtasks.length > 0 && updatedSubtasks.every(sub=>sub.completed);
+        const nextStatus = allDone ? ("done" as const) : t.status === "done" ? ("doing" as const) : t.status;
+        const now = new Date().toISOString();
+        const completedAt = allDone ? (t.completedAt || now) : null;
+        return {
+          ...s,
+          tasks: s.tasks.map(x=> x.id===taskId ? {...x, subtasks: updatedSubtasks, status: nextStatus, completedAt} : x)
+        };
       });
     },
     addTransaction(t){ setState(s=>({...s, transactions:[t,...s.transactions]}))},

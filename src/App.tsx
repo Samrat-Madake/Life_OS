@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useStore } from "./store"
 import { fmtINR, isOverdue, todayISO, minutesToHM, hasConflict, streakForHabit, toMinutes, uid } from "./utils"
-import type { Task, Priority, TaskStatus, CalendarEvent } from "./models"
+import type { Task, SubTask, Priority, TaskStatus, CalendarEvent } from "./models"
 import { ambientPlayer, SOUND_OPTIONS, type AmbientSound } from "./audio"
 
 // ===== helpers =====
@@ -332,7 +332,7 @@ function Donut({data}:{data:{label:string,value:number}[]}){
 
 // ================= Tasks =================
 function Tasks({q, onToast}:{q:string, onToast:(m:string)=>void}){
-  const { state, addTask, updateTask, deleteTask, toggleTask } = useStore();
+  const { state, addTask, updateTask, deleteTask, toggleTask, toggleSubtask } = useStore();
   const [view,setView]=useState<"list"|"kanban">("list");
   const [query,setQuery]=useState("");
   const [filterStatus,setFilterStatus]=useState<"all"|TaskStatus>("all");
@@ -403,7 +403,7 @@ function Tasks({q, onToast}:{q:string, onToast:(m:string)=>void}){
       {view==="list" ? (
         <div className="card" style={{overflow:"hidden"}}>
           <div style={{display:"grid", gridTemplateColumns:"1fr", gap:0}}>
-            {filtered.map(t=> <TaskRow key={t.id} t={t} focusMinutes={focusByTask.get(t.id)||0} onToggle={()=>{ toggleTask(t.id); onToast("Task completed"); }} onEdit={()=>{setEditing(t); setShowForm(true);}} onDelete={()=>{ if(confirm(`Delete “${t.title}”?`)) deleteTask(t.id); }} draggable onDragStart={(e)=> e.dataTransfer.setData("text/plain", t.id)} />)}
+            {filtered.map(t=> <TaskRow key={t.id} t={t} focusMinutes={focusByTask.get(t.id)||0} onToggle={()=>{ toggleTask(t.id); onToast("Task completed"); }} onToggleSubtask={(subId)=> toggleSubtask(t.id, subId)} onEdit={()=>{setEditing(t); setShowForm(true);}} onDelete={()=>{ if(confirm(`Delete “${t.title}”?`)) deleteTask(t.id); }} draggable onDragStart={(e)=> e.dataTransfer.setData("text/plain", t.id)} />)}
             {filtered.length===0 && <div style={{padding:18}}><Empty text="No tasks match your filters." actionLabel="Clear filters" onAction={()=>{setFilterStatus("all"); setFilterPri("all"); setFilterCat("all"); setQuery("");}}/></div>}
           </div>
         </div>
@@ -416,23 +416,57 @@ function Tasks({q, onToast}:{q:string, onToast:(m:string)=>void}){
                 <span style={{marginLeft:"auto", width:8,height:8,borderRadius:99, background: col==="done"?"var(--success)": col==="doing"?"var(--accent)":"var(--text-faint)"}}/>
               </div>
               <div style={{display:"flex", flexDirection:"column", gap:8}}>
-                {filtered.filter(t=>t.status===col).map(t=>(
-                  <div key={t.id} draggable onDragStart={e=>e.dataTransfer.setData("text/plain", t.id)} style={{padding:12, borderRadius:12, background:"var(--bg-elev)", border:"1px solid var(--border)", cursor:"grab"}}>
-                    <div style={{fontWeight:700, fontSize:13, display:"flex", alignItems:"center", gap:6}}>
-                      <span style={{width:8,height:8,borderRadius:99, background:priorityColor[t.priority]}}/> {t.title}
+                {filtered.filter(t=>t.status===col).map(t=>{
+                  const subtasks = t.subtasks || [];
+                  const subDone = subtasks.filter(s=>s.completed).length;
+                  const subPct = subtasks.length ? Math.round((subDone / subtasks.length) * 100) : 0;
+                  return (
+                    <div key={t.id} draggable onDragStart={e=>e.dataTransfer.setData("text/plain", t.id)} style={{padding:12, borderRadius:12, background:"var(--bg-elev)", border:"1px solid var(--border)", cursor:"grab"}}>
+                      <div style={{fontWeight:700, fontSize:13, display:"flex", alignItems:"center", gap:6}}>
+                        <span style={{width:8,height:8,borderRadius:99, background:priorityColor[t.priority]}}/> {t.title}
+                      </div>
+                      {t.description && <div style={{fontSize:12, color:"var(--text-muted)", marginTop:4, lineHeight:1.4}}>{t.description}</div>}
+                      
+                      {/* Subtasks in Kanban */}
+                      {subtasks.length > 0 && (
+                        <div style={{marginTop:8, padding:8, borderRadius:8, background:"var(--bg-soft)", border:"1px solid var(--border)"}}>
+                          <div style={{display:"flex", justifyContent:"space-between", fontSize:11, fontWeight:700, color:"var(--text-muted)"}}>
+                            <span>Checklist</span>
+                            <span>{subDone}/{subtasks.length} ({subPct}%)</span>
+                          </div>
+                          <div className="progress-track" style={{marginTop:4, height:4}}>
+                            <div className="progress-fill" style={{width:`${subPct}%`, background: subPct===100 ? "var(--success)" : "var(--accent)"}}/>
+                          </div>
+                          <div style={{display:"flex", flexDirection:"column", gap:4, marginTop:6}}>
+                            {subtasks.map(st => (
+                              <label key={st.id} onClick={e=>e.stopPropagation()} style={{display:"flex", alignItems:"center", gap:6, fontSize:11, cursor:"pointer"}}>
+                                <input
+                                  type="checkbox"
+                                  checked={st.completed}
+                                  onChange={()=> toggleSubtask(t.id, st.id)}
+                                  style={{cursor:"pointer"}}
+                                />
+                                <span style={{textDecoration: st.completed ? "line-through" : "none", opacity: st.completed ? 0.6 : 1}}>
+                                  {st.title}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{display:"flex", gap:6, marginTop:8, flexWrap:"wrap"}}>
+                        <span className="badge">{t.category}</span>
+                        {t.dueDate && <span className="badge" style={{background: isOverdue(t.dueDate) && t.status!=="done" ? "#ef444418":"var(--bg-elev2)", color: isOverdue(t.dueDate) && t.status!=="done" ? "var(--danger)":"var(--text-muted)", borderColor: isOverdue(t.dueDate)?"#ef444430":"var(--border)"}}>{isOverdue(t.dueDate)&&t.status!=="done"?"Overdue • ":""}{t.dueDate}</span>}
+                        {focusByTask.get(t.id) && <span className="badge" style={{background:"#7c6cff18", color:"var(--accent)", borderColor:"#7c6cff30"}}>⏱ {focusByTask.get(t.id)}m</span>}
+                      </div>
+                      <div style={{display:"flex", gap:6, marginTop:8}}>
+                        <button className="btn btn-sm" onClick={()=>{ toggleTask(t.id); onToast("Task completed"); }}>{t.status==="done"?"Undo":"Complete"}</button>
+                        <button className="btn btn-sm btn-ghost" onClick={()=>{setEditing(t); setShowForm(true);}}>Edit</button>
+                      </div>
                     </div>
-                    {t.description && <div style={{fontSize:12, color:"var(--text-muted)", marginTop:4, lineHeight:1.4}}>{t.description}</div>}
-                    <div style={{display:"flex", gap:6, marginTop:8, flexWrap:"wrap"}}>
-                      <span className="badge">{t.category}</span>
-                      {t.dueDate && <span className="badge" style={{background: isOverdue(t.dueDate) && t.status!=="done" ? "#ef444418":"var(--bg-elev2)", color: isOverdue(t.dueDate) && t.status!=="done" ? "var(--danger)":"var(--text-muted)", borderColor: isOverdue(t.dueDate)?"#ef444430":"var(--border)"}}>{isOverdue(t.dueDate)&&t.status!=="done"?"Overdue • ":""}{t.dueDate}</span>}
-                      {focusByTask.get(t.id) && <span className="badge" style={{background:"#7c6cff18", color:"var(--accent)", borderColor:"#7c6cff30"}}>⏱ {focusByTask.get(t.id)}m</span>}
-                    </div>
-                    <div style={{display:"flex", gap:6, marginTop:8}}>
-                      <button className="btn btn-sm" onClick={()=>{ toggleTask(t.id); onToast("Task completed"); }}>{t.status==="done"?"Undo":"Complete"}</button>
-                      <button className="btn btn-sm btn-ghost" onClick={()=>{setEditing(t); setShowForm(true);}}>Edit</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {filtered.filter(t=>t.status===col).length===0 && <div style={{padding:10}}><Empty text="Drop tasks here."/></div>}
               </div>
             </div>
@@ -451,33 +485,102 @@ function Tasks({q, onToast}:{q:string, onToast:(m:string)=>void}){
   )
 }
 
-function TaskRow({t, compact, onToggle, onEdit, onDelete, draggable, onDragStart, focusMinutes}:{t:Task, compact?:boolean, onToggle?:()=>void, onEdit?:()=>void, onDelete?:()=>void, draggable?:boolean, onDragStart?:(e:React.DragEvent)=>void, focusMinutes?:number}){
+function TaskRow({t, compact, onToggle, onToggleSubtask, onEdit, onDelete, draggable, onDragStart, focusMinutes}:{t:Task, compact?:boolean, onToggle?:()=>void, onToggleSubtask?:(subtaskId:string)=>void, onEdit?:()=>void, onDelete?:()=>void, draggable?:boolean, onDragStart?:(e:React.DragEvent)=>void, focusMinutes?:number}){
   const overdue=isOverdue(t.dueDate) && t.status!=="done";
+  const [expanded, setExpanded] = useState(false);
+  const subtasks = t.subtasks || [];
+  const subDone = subtasks.filter(s=>s.completed).length;
+  const subPct = subtasks.length ? Math.round((subDone / subtasks.length) * 100) : 0;
+
   return (
-    <div draggable={draggable} onDragStart={onDragStart} style={{display:"flex", gap:12, padding: compact?"10px 12px":"12px 14px", borderBottom:"1px solid var(--border)", alignItems:"center", background: overdue? "rgba(239,68,68,.06)":undefined}}>
-      <button aria-label="Toggle complete" onClick={onToggle} style={{width:22,height:22,borderRadius:7, border:"1px solid "+(t.status==="done"?"var(--success)":"var(--border)"), background: t.status==="done"?"var(--success)":"transparent", color:"white", display:"grid", placeItems:"center", fontSize:12, cursor:"pointer", flexShrink:0}}>
-        {t.status==="done"?"✓":""}
-      </button>
-      <div style={{flex:1, minWidth:0}}>
-        <div style={{fontWeight:750, fontSize:13, textDecoration: t.status==="done"?"line-through":"none", opacity: t.status==="done"?.7:1, display:"flex", gap:8, alignItems:"center", flexWrap:"wrap"}}>
-          {t.title}
-          <span style={{width:8,height:8,borderRadius:99, background:priorityColor[t.priority]}} title={t.priority}/>
-          <span className="badge" style={{background:"var(--bg-elev2)"}}>{t.category}</span>
-          {overdue && <span className="badge" style={{background:"#ef444418", color:"var(--danger)", borderColor:"#ef444430"}}>Overdue</span>}
-          {t.goalId && <span className="badge" style={{background:"#7c6cff18", color:"var(--accent)", borderColor:"#7c6cff30"}}>Goal-linked</span>}
-          {focusMinutes && <span className="badge" style={{background:"#7c6cff18", color:"var(--accent)", borderColor:"#7c6cff30"}}>⏱ {focusMinutes}m focus</span>}
+    <div draggable={draggable} onDragStart={onDragStart} style={{display:"flex", flexDirection:"column", borderBottom:"1px solid var(--border)", background: overdue? "rgba(239,68,68,.06)":undefined}}>
+      <div style={{display:"flex", gap:12, padding: compact?"10px 12px":"12px 14px", alignItems:"center"}}>
+        <button aria-label="Toggle complete" onClick={onToggle} style={{width:22,height:22,borderRadius:7, border:"1px solid "+(t.status==="done"?"var(--success)":"var(--border)"), background: t.status==="done"?"var(--success)":"transparent", color:"white", display:"grid", placeItems:"center", fontSize:12, cursor:"pointer", flexShrink:0}}>
+          {t.status==="done"?"✓":""}
+        </button>
+        <div style={{flex:1, minWidth:0}}>
+          <div style={{fontWeight:750, fontSize:13, textDecoration: t.status==="done"?"line-through":"none", opacity: t.status==="done"?.7:1, display:"flex", gap:8, alignItems:"center", flexWrap:"wrap"}}>
+            {t.title}
+            <span style={{width:8,height:8,borderRadius:99, background:priorityColor[t.priority]}} title={t.priority}/>
+            <span className="badge" style={{background:"var(--bg-elev2)"}}>{t.category}</span>
+            {overdue && <span className="badge" style={{background:"#ef444418", color:"var(--danger)", borderColor:"#ef444430"}}>Overdue</span>}
+            {t.goalId && <span className="badge" style={{background:"#7c6cff18", color:"var(--accent)", borderColor:"#7c6cff30"}}>Goal-linked</span>}
+            {focusMinutes && <span className="badge" style={{background:"#7c6cff18", color:"var(--accent)", borderColor:"#7c6cff30"}}>⏱ {focusMinutes}m focus</span>}
+            
+            {/* Subtask count badge */}
+            {subtasks.length > 0 && (
+              <button
+                type="button"
+                onClick={(e)=>{ e.stopPropagation(); setExpanded(v=>!v); }}
+                className="badge"
+                style={{
+                  background: subPct===100 ? "#22c55e18" : "var(--accent-elev)",
+                  color: subPct===100 ? "var(--success)" : "var(--accent)",
+                  borderColor: subPct===100 ? "#22c55e30" : "var(--border-strong)",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4
+                }}
+                title="Click to toggle checklist"
+              >
+                <span>☑ {subDone}/{subtasks.length} ({subPct}%)</span>
+                <span style={{fontSize:9}}>{expanded ? "▲" : "▼"}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Subtask progress bar */}
+          {subtasks.length > 0 && (
+            <div className="progress-track" style={{marginTop:6, maxWidth:240, height:4}}>
+              <div className="progress-fill" style={{width:`${subPct}%`, background: subPct===100 ? "var(--success)" : "var(--accent)"}}/>
+            </div>
+          )}
+
+          {!compact && t.description && <div style={{fontSize:12, color:"var(--text-muted)", marginTop:4}}>{t.description}</div>}
+          <div style={{display:"flex", gap:8, marginTop:4, fontSize:12, color:"var(--text-muted)", alignItems:"center"}}>
+            {t.dueDate ? <span>Due {t.dueDate}</span> : <span>No due date</span>}
+            <span>•</span><span style={{textTransform:"capitalize"}}>{t.status}</span>
+          </div>
         </div>
-        {!compact && t.description && <div style={{fontSize:12, color:"var(--text-muted)", marginTop:2}}>{t.description}</div>}
-        <div style={{display:"flex", gap:8, marginTop:4, fontSize:12, color:"var(--text-muted)", alignItems:"center"}}>
-          {t.dueDate ? <span>Due {t.dueDate}</span> : <span>No due date</span>}
-          <span>•</span><span style={{textTransform:"capitalize"}}>{t.status}</span>
-        </div>
+        {!compact && <div style={{display:"flex", gap:6}}>
+          {onToggle && <button className="btn btn-sm" onClick={onToggle}>{t.status==="done"?"Undo":"Done"}</button>}
+          {onEdit && <button className="btn btn-sm btn-ghost" onClick={onEdit}>Edit</button>}
+          {onDelete && <button className="btn btn-sm btn-ghost" onClick={onDelete} style={{color:"var(--danger)"}}>Delete</button>}
+        </div>}
       </div>
-      {!compact && <div style={{display:"flex", gap:6}}>
-        {onToggle && <button className="btn btn-sm" onClick={onToggle}>{t.status==="done"?"Undo":"Done"}</button>}
-        {onEdit && <button className="btn btn-sm btn-ghost" onClick={onEdit}>Edit</button>}
-        {onDelete && <button className="btn btn-sm btn-ghost" onClick={onDelete} style={{color:"var(--danger)"}}>Delete</button>}
-      </div>}
+
+      {/* Expanded subtask checklist */}
+      {expanded && subtasks.length > 0 && (
+        <div style={{padding:"0 14px 12px 48px", display:"flex", flexDirection:"column", gap:6}}>
+          {subtasks.map(st => (
+            <label
+              key={st.id}
+              style={{
+                display:"flex",
+                alignItems:"center",
+                gap:8,
+                padding:"6px 10px",
+                borderRadius:8,
+                background:"var(--bg-elev2)",
+                border:"1px solid var(--border)",
+                cursor:"pointer",
+                fontSize:12
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={st.completed}
+                onChange={()=> onToggleSubtask && onToggleSubtask(st.id)}
+                style={{cursor:"pointer"}}
+              />
+              <span style={{flex:1, fontWeight:600, textDecoration: st.completed ? "line-through" : "none", opacity: st.completed ? 0.6 : 1}}>
+                {st.title}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -491,10 +594,19 @@ function TaskForm({initial, onClose, onSave}:{initial:Task|null, onClose:()=>voi
   const [dueDate,setDueDate]=useState(initial?.dueDate||"");
   const [status,setStatus]=useState<TaskStatus>(initial?.status||"todo");
   const [goalId,setGoalId]=useState(initial?.goalId||"");
+  const [subtasks,setSubtasks]=useState<SubTask[]>(initial?.subtasks ? [...initial.subtasks] : []);
+  const [newSubtaskTitle,setNewSubtaskTitle]=useState("");
   const [err,setErr]=useState<string|null>(null);
+
+  const addSubtaskItem = () => {
+    if (!newSubtaskTitle.trim()) return;
+    setSubtasks(prev => [...prev, { id: uid(), title: newSubtaskTitle.trim(), completed: false }]);
+    setNewSubtaskTitle("");
+  };
+
   return (
     <div role="dialog" aria-modal="true" style={{position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"grid", placeItems:"center", zIndex:50, padding:16}}>
-      <div className="card" style={{width:"min(560px, 100%)", padding:16, animation:"pop .18s ease"}}>
+      <div className="card" style={{width:"min(580px, 100%)", padding:16, animation:"pop .18s ease", maxHeight:"90vh", overflow:"auto"}}>
         <div style={{display:"flex", alignItems:"center", justifyContent:"space-between"}}>
           <h3 style={{fontWeight:900}}>{initial?"Edit task":"New task"}</h3>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
@@ -519,12 +631,68 @@ function TaskForm({initial, onClose, onSave}:{initial:Task|null, onClose:()=>voi
           <label style={{fontSize:12,fontWeight:700}}>Link to goal (optional)
             <select className="select" value={goalId} onChange={e=>setGoalId(e.target.value)}><option value="">No goal</option>{state.goals.map(g=> <option key={g.id} value={g.id}>{g.title}</option>)}</select>
           </label>
+
+          {/* Subtasks Builder */}
+          <div style={{padding:12, borderRadius:10, background:"var(--bg-elev2)", border:"1px solid var(--border)"}}>
+            <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8}}>
+              <span style={{fontSize:12, fontWeight:800}}>Subtasks & Checklist ({subtasks.filter(s=>s.completed).length}/{subtasks.length})</span>
+            </div>
+
+            <div style={{display:"flex", gap:6, marginBottom:8}}>
+              <input
+                className="input"
+                placeholder="Add subtask item…"
+                value={newSubtaskTitle}
+                onChange={e=>setNewSubtaskTitle(e.target.value)}
+                onKeyDown={e=>{ if(e.key==="Enter"){ e.preventDefault(); addSubtaskItem(); } }}
+                style={{flex:1}}
+              />
+              <button type="button" className="btn btn-sm" onClick={addSubtaskItem}>＋ Add</button>
+            </div>
+
+            {subtasks.length > 0 && (
+              <div style={{display:"flex", flexDirection:"column", gap:6, maxHeight:180, overflowY:"auto"}}>
+                {subtasks.map(st => (
+                  <div key={st.id} style={{display:"flex", alignItems:"center", gap:8, padding:"6px 8px", background:"var(--card)", borderRadius:8, border:"1px solid var(--border)"}}>
+                    <input
+                      type="checkbox"
+                      checked={st.completed}
+                      onChange={()=> setSubtasks(prev => prev.map(s => s.id===st.id ? {...s, completed:!s.completed} : s))}
+                      style={{cursor:"pointer"}}
+                    />
+                    <span style={{flex:1, fontSize:12, fontWeight:600, textDecoration: st.completed ? "line-through" : "none", opacity: st.completed ? 0.6 : 1}}>
+                      {st.title}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={()=> setSubtasks(prev => prev.filter(s => s.id!==st.id))}
+                      style={{padding:"2px 6px", color:"var(--danger)", fontSize:11}}
+                      title="Remove subtask"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {err && <div style={{color:"var(--danger)", fontSize:12, fontWeight:700}}>{err}</div>}
           <div style={{display:"flex", gap:8, justifyContent:"flex-end", marginTop:4}}>
             <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
             <button className="btn btn-primary" onClick={()=>{
               if(!title.trim()){ setErr("Title is required."); return; }
-              onSave({ title:title.trim(), description:description.trim()||undefined, priority, category, dueDate: dueDate||null, status, goalId: goalId||null });
+              onSave({
+                title: title.trim(),
+                description: description.trim() || undefined,
+                priority,
+                category,
+                dueDate: dueDate || null,
+                status,
+                goalId: goalId || null,
+                subtasks
+              });
             }}>Save task</button>
           </div>
         </div>

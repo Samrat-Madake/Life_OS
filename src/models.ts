@@ -2,6 +2,12 @@ export type Priority = "low"|"medium"|"high"|"urgent";
 export type TaskStatus = "todo"|"doing"|"done";
 export type TaskCategory = "Work"|"Personal"|"Health"|"Finance"|"Learning"|"Home";
 
+export type SubTask = {
+  id: string
+  title: string
+  completed: boolean
+};
+
 export type Task = {
   id:string
   title:string
@@ -13,6 +19,7 @@ export type Task = {
   scheduledAt?: string | null // ISO datetime
   goalId?: string | null
   milestoneId?: string | null
+  subtasks?: SubTask[]
   createdAt:string
   completedAt?:string | null
 };
