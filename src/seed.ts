@@ -186,3 +186,20 @@ export function buildSeed():AppState{
     ],
   };
 }
+
+export function buildEmptyState(): AppState {
+  return {
+    currency: "INR",
+    tasks: [],
+    habits: [],
+    habitLogs: [],
+    transactions: [],
+    budgets: [
+      { category: "Food & Dining", limitPaise: 1200000 },
+      { category: "Shopping", limitPaise: 800000 }
+    ],
+    events: [],
+    goals: [],
+    focusSessions: []
+  };
+}

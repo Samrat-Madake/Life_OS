@@ -31,18 +31,22 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       passwordHash
     });
 
-    // Create user data document (migrate initial local state if supplied)
+    // Create fresh empty user data document for newly registered user
+    const currentMonth = new Date().toISOString().slice(0, 7);
     await UserData.create({
       userId: user._id,
-      tasks: initialData?.tasks || [],
-      habits: initialData?.habits || [],
-      habitLogs: initialData?.habitLogs || [],
-      transactions: initialData?.transactions || [],
-      budgets: initialData?.budgets || [],
-      events: initialData?.events || [],
-      goals: initialData?.goals || [],
-      focusSessions: initialData?.focusSessions || [],
-      currency: initialData?.currency || "INR"
+      tasks: [],
+      habits: [],
+      habitLogs: [],
+      transactions: [],
+      budgets: [
+        { id: "b1", category: "Food & Dining", limit: 1200000, month: currentMonth },
+        { id: "b2", category: "Shopping", limit: 800000, month: currentMonth }
+      ],
+      events: [],
+      goals: [],
+      focusSessions: [],
+      currency: "INR"
     });
 
     const token = jwt.sign({ userId: user._id.toString() }, JWT_SECRET, { expiresIn: "30d" });

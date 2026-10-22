@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { AppState, Transaction, Task, CalendarEvent, FocusSession, Goal, AuthUser } from "./models";
-import { buildSeed } from "./seed";
+import { buildSeed, buildEmptyState } from "./seed";
 import { api as apiClient, setToken } from "./api";
 
 const KEY = "lifeos:v1";
@@ -126,9 +126,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (name: string, email: string, pass: string) => {
-    const res = await apiClient.register(name, email, pass, state);
+    const res = await apiClient.register(name, email, pass);
     setToken(res.token);
     setUser(res.user);
+    // Reset all data to clean fresh slate for new registered user
+    const emptyState = buildEmptyState();
+    setState(emptyState);
+    localStorage.setItem(KEY, JSON.stringify(emptyState));
   };
 
   const logout = () => {

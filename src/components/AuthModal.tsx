@@ -22,7 +22,7 @@ export function AuthModal({ onClose, onToast }: { onClose: () => void; onToast: 
       } else {
         if (!name.trim()) throw new Error("Please enter your name");
         await register(name.trim(), email, password);
-        onToast("Account created! Existing local data backed up to cloud.");
+        onToast("Account created! Welcome to your clean workspace.");
       }
       onClose();
     } catch (error: any) {

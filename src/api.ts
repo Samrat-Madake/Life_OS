@@ -12,11 +12,11 @@ export function setToken(token: string | null) {
 }
 
 export const api = {
-  async register(name: string, email: string, password: string, initialData?: AppState) {
+  async register(name: string, email: string, password: string) {
     const res = await fetch(`${API_BASE}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, initialData })
+      body: JSON.stringify({ name, email, password })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Registration failed");
