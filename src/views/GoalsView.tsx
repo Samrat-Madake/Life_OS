@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useStore } from "../store";
 import { fmtINR, todayISO, uid } from "../utils";
-import { Empty } from "../components/CommonUI";
+import { Empty, ColorPicker } from "../components/CommonUI";
 
 function GoalForm({ initial, onClose, onSave }: { initial: any | null; onClose: () => void; onSave: (p: any) => void }) {
   const [title, setTitle] = useState(initial?.title || "");
@@ -30,15 +30,15 @@ function GoalForm({ initial, onClose, onSave }: { initial: any | null; onClose: 
             Description
             <textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Deadline
               <input className="input" type="date" value={deadline} onChange={e => setDeadline(e.target.value)} />
             </label>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>
-              Color
-              <input className="input" type="color" value={color} onChange={e => setColor(e.target.value)} />
-            </label>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 12, fontWeight: 700 }}>Color</span>
+            <ColorPicker value={color} onChange={setColor} />
           </div>
           <div style={{ padding: 10, borderRadius: 10, background: "var(--bg-elev2)", border: "1px solid var(--border)" }}>
             <div style={{ fontSize: 12, fontWeight: 800 }}>Measurable target (optional)</div>

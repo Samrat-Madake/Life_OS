@@ -11,9 +11,10 @@ import { FinanceView } from "./views/FinanceView";
 import { FocusStudio } from "./views/FocusStudio";
 import { CalendarView } from "./views/CalendarView";
 import { GoalsView } from "./views/GoalsView";
+import { LandingView } from "./views/LandingView";
 
 export default function App() {
-  const { theme, setTheme, state, reset, user, logout, isSyncing, syncError } = useStore();
+  const { theme, setTheme, state, user, authLoading, logout, isSyncing, syncError } = useStore();
   const [view, setView] = useState<View>("overview");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,6 +51,68 @@ export default function App() {
     return () => m.removeEventListener("change", apply);
   }, []);
 
+  // Auth Loading Screen while checking token
+  if (authLoading) {
+    return (
+      <div style={{ minHeight: "100vh", background: "var(--bg)", display: "grid", placeItems: "center" }}>
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: 14,
+              background: "linear-gradient(135deg, #7c6cff, #5eead4)",
+              display: "grid",
+              placeItems: "center",
+              color: "white",
+              fontWeight: 900,
+              fontSize: 22,
+              boxShadow: "0 8px 24px rgba(124, 108, 255, 0.4)",
+              animation: "pop .4s ease infinite alternate"
+            }}
+          >
+            L
+          </div>
+          <div style={{ fontWeight: 900, fontSize: 16, letterSpacing: "-0.01em" }}>LifeOS</div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Loading your workspace…</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Auth Guard: Unauthenticated visitors see the Landing Page & Login/Register flow
+  if (!user) {
+    return (
+      <>
+        <LandingView onToast={addToast} />
+        {/* Toast Notifications */}
+        {toasts.map((t, i) => (
+          <div
+            key={t.id}
+            role="status"
+            style={{
+              position: "fixed",
+              bottom: 16 + i * 52,
+              right: 16,
+              background: "var(--card)",
+              border: "1px solid var(--border)",
+              padding: "10px 14px",
+              borderRadius: 10,
+              boxShadow: "var(--shadow)",
+              fontWeight: 700,
+              fontSize: 13,
+              animation: "slideUp .2s ease",
+              zIndex: 100
+            }}
+          >
+            {t.message}
+          </div>
+        ))}
+      </>
+    );
+  }
+
+  // Authenticated Dashboard: Full Workspace Available
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}>
       {/* Sidebar */}
@@ -170,7 +233,7 @@ export default function App() {
                 gap: 8,
                 padding: collapsed ? "6px 0" : "8px 10px",
                 borderRadius: 8,
-                background: "var(--bg-elev1)",
+                background: "var(--bg-elev)",
                 justifyContent: collapsed ? "center" : "flex-start"
               }}
             >
@@ -223,15 +286,7 @@ export default function App() {
             </button>
           )}
 
-          {!collapsed && <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, letterSpacing: .06 + "em", marginTop: 4 }}>SYSTEM</div>}
-          <button
-            className="btn btn-sm"
-            style={{ justifyContent: collapsed ? "center" : "flex-start" }}
-            onClick={() => { reset(); addToast("Demo data restored"); }}
-            title="Reset Demo Data"
-          >
-            ↺ {!collapsed && "Reset Demo Data"}
-          </button>
+
           {!collapsed && (
             <div style={{ fontSize: 11, color: "var(--text-faint)" }}>
               {user ? `Cloud: ${user.email}` : "v1.0 • Local-first"} • {state.tasks.length} tasks
@@ -249,7 +304,7 @@ export default function App() {
             position: "sticky",
             top: 0,
             zIndex: 10,
-            background: "rgba(10,10,15,.75)",
+            background: "var(--topbar-bg)",
             backdropFilter: "blur(12px)",
             borderBottom: "1px solid var(--border)",
             display: "flex",

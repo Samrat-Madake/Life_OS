@@ -25,12 +25,14 @@
   --sidebar-w:264px;
   --sidebar-collapsed:72px;
   --topbar-h:56px;
+  --topbar-bg:rgba(10,10,15,.75);
 }
 [data-theme="light"]{
   --bg:#f6f7fb;
   --bg-soft:#ffffff;
   --bg-elev:#ffffff;
   --bg-elev2:#f1f2f7;
+  --topbar-bg:rgba(255,255,255,.85);
   --card:#ffffff;
   --card-hover:#f8f8fc;
   --border:#e6e7ee;

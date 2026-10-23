@@ -20,7 +20,6 @@ export function Donut({ data }: { data: { label: string; value: number }[] }) {
           acc += pct;
           return <circle key={d.label} cx={21} cy={21} r={15.9} fill="transparent" stroke={colors[i % colors.length]} strokeWidth={6} strokeDasharray={dash} strokeDashoffset={offset} style={{ transform: "rotate(-90deg)", transformOrigin: "21px 21px" }} />
         })}
-        <text x={21} y={21} textAnchor="middle" dominantBaseline="middle" fontSize={4.2} fontWeight={800} fill="var(--text)">{total > 0 ? (data.length ? data[0].label.slice(0, 6) : "") : "—"}</text>
       </svg>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
         {data.slice(0, 6).map((d, i) => (

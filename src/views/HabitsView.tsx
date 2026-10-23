@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useStore } from "../store";
 import { streakForHabit, todayISO, uid } from "../utils";
-import { Empty } from "../components/CommonUI";
+import { Empty, ColorPicker } from "../components/CommonUI";
 
 function Achievement({ unlocked, label }: { unlocked: boolean; label: string }) {
   return (
@@ -10,6 +10,18 @@ function Achievement({ unlocked, label }: { unlocked: boolean; label: string }) 
     </span>
   );
 }
+
+const HABIT_ICONS = [
+  { icon: "⭐", label: "⭐ Star (General)" },
+  { icon: "🏃", label: "🏃 Exercise / Fitness" },
+  { icon: "💧", label: "💧 Drink Water" },
+  { icon: "📚", label: "📚 Reading / Study" },
+  { icon: "🧘", label: "🧘 Meditation" },
+  { icon: "🥗", label: "🥗 Healthy Diet" },
+  { icon: "💻", label: "💻 Coding / Work" },
+  { icon: "✍️", label: "✍️ Journal" },
+  { icon: "💤", label: "💤 Sleep / Rest" }
+];
 
 function HabitForm({ initial, onClose, onSave }: { initial: any | null; onClose: () => void; onSave: (p: any) => void }) {
   const [name, setName] = useState(initial?.name || "");
@@ -54,13 +66,22 @@ function HabitForm({ initial, onClose, onSave }: { initial: any | null; onClose:
             </label>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Icon
-              <input className="input" value={icon} onChange={e => setIcon(e.target.value)} />
+              <select className="select" value={icon} onChange={e => setIcon(e.target.value)}>
+                {HABIT_ICONS.map(item => (
+                  <option key={item.icon} value={item.icon}>
+                    {item.label}
+                  </option>
+                ))}
+                {!HABIT_ICONS.some(item => item.icon === icon) && icon && (
+                  <option value={icon}>{icon} Custom</option>
+                )}
+              </select>
             </label>
           </div>
-          <label style={{ fontSize: 12, fontWeight: 700 }}>
-            Color
-            <input className="input" type="color" value={color} onChange={e => setColor(e.target.value)} />
-          </label>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 12, fontWeight: 700 }}>Color</span>
+            <ColorPicker value={color} onChange={setColor} />
+          </div>
           {err && <div style={{ color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{err}</div>}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
             <button className="btn btn-ghost" onClick={onClose}>Cancel</button>

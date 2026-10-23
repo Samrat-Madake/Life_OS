@@ -3,7 +3,7 @@ import { useStore } from "../store";
 import type { CalendarEvent } from "../models";
 import { priorityColor } from "../components/constants";
 import { hasConflict, todayISO, toMinutes, uid } from "../utils";
-import { Empty } from "../components/CommonUI";
+import { Empty, ColorPicker } from "../components/CommonUI";
 
 function EventForm({
   initial,
@@ -59,11 +59,7 @@ function EventForm({
               <input className="input" type="time" value={end} onChange={e => setEnd(e.target.value)} />
             </label>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>
-              Color
-              <input className="input" type="color" value={color} onChange={e => setColor(e.target.value)} />
-            </label>
+          <div>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Link task
               <select className="select" value={taskId || ""} onChange={e => setTaskId(e.target.value)}>
@@ -71,6 +67,10 @@ function EventForm({
                 {state.tasks.slice(0, 30).map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
               </select>
             </label>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 12, fontWeight: 700 }}>Color</span>
+            <ColorPicker value={color} onChange={setColor} />
           </div>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Description

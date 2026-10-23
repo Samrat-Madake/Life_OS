@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { AppState, Transaction, Task, CalendarEvent, FocusSession, Goal, AuthUser } from "./models";
+import type { AppState, Transaction, Task, CalendarEvent, FocusSession, Goal, AuthUser, Subscription } from "./models";
 import { buildSeed, buildEmptyState } from "./seed";
 import { api as apiClient, setToken } from "./api";
 
@@ -20,6 +20,7 @@ function load(): AppState {
       habitLogs: Array.isArray(parsed.habitLogs) ? parsed.habitLogs : seed.habitLogs,
       transactions: Array.isArray(parsed.transactions) ? parsed.transactions : seed.transactions,
       budgets: Array.isArray(parsed.budgets) ? parsed.budgets : seed.budgets,
+      subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : (seed.subscriptions || []),
       events: Array.isArray(parsed.events) ? parsed.events : seed.events,
       goals: Array.isArray(parsed.goals) ? parsed.goals : seed.goals,
       focusSessions: Array.isArray(parsed.focusSessions) ? parsed.focusSessions : seed.focusSessions,
@@ -38,6 +39,7 @@ type Store = {
 
   // Auth & Cloud Sync
   user: AuthUser | null;
+  authLoading: boolean;
   isSyncing: boolean;
   syncError: string | null;
   login: (email: string, pass: string) => Promise<void>;
@@ -66,6 +68,12 @@ type Store = {
   toggleMilestone: (goalId: string, milestoneId: string) => void;
   addFocusSession: (s: FocusSession) => void;
   upsertFocusSession: (s: FocusSession) => void;
+  upsertBudget: (category: string, limitPaise: number) => void;
+  deleteBudget: (category: string) => void;
+  addSubscription: (s: Subscription) => void;
+  updateSubscription: (id: string, patch: Partial<Subscription>) => void;
+  deleteSubscription: (id: string) => void;
+  toggleSubscription: (id: string) => void;
 };
 
 const Ctx = createContext<Store>(null as any);
@@ -74,6 +82,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(() => load());
   const [theme, setTheme] = useState<"dark" | "light">(() => (localStorage.getItem(THEME_KEY) as any) || "dark");
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
@@ -99,11 +108,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     cloudSyncRef.current = window.setTimeout(async () => {
       setIsSyncing(true);
       try {
-        const ok = await apiClient.syncCloudState(state);
-        if (ok) {
+        const res = await apiClient.syncCloudState(state);
+        if (res.ok) {
           setSyncError(null);
         } else {
-          setSyncError("Sync failed (server offline or not reachable)");
+          setSyncError(res.error || "Sync failed");
+          if (res.error?.includes("Unauthorized")) {
+            setUser(null);
+          }
         }
       } catch (err: any) {
         setSyncError(err?.message || "Sync error");
@@ -115,19 +127,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Restore authenticated user on mount & pull cloud state
   useEffect(() => {
+    let mounted = true;
+    const safetyTimer = setTimeout(() => {
+      if (mounted) setAuthLoading(false);
+    }, 1200);
+
     async function initAuth() {
-      const res = await apiClient.getMe();
-      if (res && res.user) {
-        setUser(res.user);
-        const cloudState = await apiClient.fetchCloudState();
-        if (cloudState && Array.isArray(cloudState.tasks)) {
-          setState(cloudState);
-          localStorage.setItem(KEY, JSON.stringify(cloudState));
+      try {
+        const res = await apiClient.getMe();
+        if (!mounted) return;
+        if (res && res.user) {
+          setUser(res.user);
+          const cloudState = await apiClient.fetchCloudState();
+          if (mounted && cloudState && Array.isArray(cloudState.tasks)) {
+            setState(cloudState);
+            localStorage.setItem(KEY, JSON.stringify(cloudState));
+          }
+        } else {
+          setUser(null);
+        }
+      } catch (e) {
+        if (mounted) setUser(null);
+      } finally {
+        if (mounted) {
+          clearTimeout(safetyTimer);
+          isHydratedRef.current = true;
+          setAuthLoading(false);
         }
       }
-      isHydratedRef.current = true;
     }
     initAuth();
+
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   const login = async (email: string, pass: string) => {
@@ -160,6 +194,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     isHydratedRef.current = false;
+    const empty = buildEmptyState();
+    setState(empty);
+    localStorage.setItem(KEY, JSON.stringify(empty));
   };
 
   const apiValue = useMemo<Store>(() => ({
@@ -168,6 +205,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     theme,
     setTheme,
     user,
+    authLoading,
     isSyncing,
     syncError,
     login,
@@ -230,6 +268,39 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addTransaction(t) { setState(s => ({ ...s, transactions: [t, ...s.transactions] })); },
     updateTransaction(id, patch) { setState(s => ({ ...s, transactions: s.transactions.map(x => x.id === id ? { ...x, ...patch } : x) })); },
     deleteTransaction(id) { setState(s => ({ ...s, transactions: s.transactions.filter(x => x.id !== id) })); },
+    upsertBudget(category, limitPaise) {
+      setState(s => {
+        const exists = s.budgets.some(b => b.category === category);
+        const updated = exists
+          ? s.budgets.map(b => b.category === category ? { ...b, limitPaise } : b)
+          : [...s.budgets, { category, limitPaise }];
+        return { ...s, budgets: updated };
+      });
+    },
+    deleteBudget(category) {
+      setState(s => ({ ...s, budgets: s.budgets.filter(b => b.category !== category) }));
+    },
+    addSubscription(sub) {
+      setState(s => ({ ...s, subscriptions: [sub, ...(s.subscriptions || [])] }));
+    },
+    updateSubscription(id, patch) {
+      setState(s => ({
+        ...s,
+        subscriptions: (s.subscriptions || []).map(x => x.id === id ? { ...x, ...patch } : x)
+      }));
+    },
+    deleteSubscription(id) {
+      setState(s => ({
+        ...s,
+        subscriptions: (s.subscriptions || []).filter(x => x.id !== id)
+      }));
+    },
+    toggleSubscription(id) {
+      setState(s => ({
+        ...s,
+        subscriptions: (s.subscriptions || []).map(x => x.id === id ? { ...x, isActive: !x.isActive } : x)
+      }));
+    },
     addEvent(e) {
       setState(s => {
         let tasks = s.tasks;
@@ -285,7 +356,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
     addFocusSession(sesh) { setState(s => ({ ...s, focusSessions: [sesh, ...s.focusSessions] })); },
     upsertFocusSession(sesh) { setState(s => ({ ...s, focusSessions: [sesh, ...s.focusSessions.filter(x => x.id !== sesh.id)] })); }
-  }), [state, theme, user, isSyncing]);
+  }), [state, theme, user, authLoading, isSyncing, syncError]);
 
   return <Ctx.Provider value={apiValue}>{children}</Ctx.Provider>;
 }

@@ -6,7 +6,7 @@ import { UserData } from "../models/UserData";
 import { authMiddleware, AuthRequest } from "../middleware/auth";
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || "lifeos_super_secret_jwt_key_2026";
+export const getJwtSecret = (): string => process.env.JWT_SECRET || "lifeos_super_secret_jwt_key_2026";
 
 // POST /api/auth/register
 router.post("/register", async (req: Request, res: Response): Promise<void> => {
@@ -40,8 +40,8 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       habitLogs: [],
       transactions: [],
       budgets: [
-        { id: "b1", category: "Food & Dining", limit: 1200000, month: currentMonth },
-        { id: "b2", category: "Shopping", limit: 800000, month: currentMonth }
+        { id: "b1", category: "Dining", limitPaise: 1200000, month: currentMonth },
+        { id: "b2", category: "Shopping", limitPaise: 800000, month: currentMonth }
       ],
       events: [],
       goals: [],
@@ -49,7 +49,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       currency: "INR"
     });
 
-    const token = jwt.sign({ userId: user._id.toString() }, JWT_SECRET, { expiresIn: "30d" });
+    const token = jwt.sign({ userId: user._id.toString() }, getJwtSecret(), { expiresIn: "30d" });
 
     res.status(201).json({
       token,
@@ -87,7 +87,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const token = jwt.sign({ userId: user._id.toString() }, JWT_SECRET, { expiresIn: "30d" });
+    const token = jwt.sign({ userId: user._id.toString() }, getJwtSecret(), { expiresIn: "30d" });
 
     res.json({
       token,

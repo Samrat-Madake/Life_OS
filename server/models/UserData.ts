@@ -7,6 +7,7 @@ export interface IUserData extends Document {
   habitLogs: any[];
   transactions: any[];
   budgets: any[];
+  subscriptions: any[];
   events: any[];
   goals: any[];
   focusSessions: any[];
@@ -28,6 +29,7 @@ const UserDataSchema = new Schema<IUserData>(
     habitLogs: { type: [Schema.Types.Mixed], default: [] },
     transactions: { type: [Schema.Types.Mixed], default: [] },
     budgets: { type: [Schema.Types.Mixed], default: [] },
+    subscriptions: { type: [Schema.Types.Mixed], default: [] },
     events: { type: [Schema.Types.Mixed], default: [] },
     goals: { type: [Schema.Types.Mixed], default: [] },
     focusSessions: { type: [Schema.Types.Mixed], default: [] },

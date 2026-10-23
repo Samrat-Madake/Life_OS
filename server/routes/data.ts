@@ -16,6 +16,7 @@ router.get("/state", authMiddleware, async (req: AuthRequest, res: Response): Pr
         habitLogs: [],
         transactions: [],
         budgets: [],
+        subscriptions: [],
         events: [],
         goals: [],
         focusSessions: [],
@@ -29,6 +30,7 @@ router.get("/state", authMiddleware, async (req: AuthRequest, res: Response): Pr
       habitLogs: data.habitLogs || [],
       transactions: data.transactions || [],
       budgets: data.budgets || [],
+      subscriptions: (data as any).subscriptions || [],
       events: data.events || [],
       goals: data.goals || [],
       focusSessions: data.focusSessions || [],
@@ -49,31 +51,36 @@ router.post("/sync", authMiddleware, async (req: AuthRequest, res: Response): Pr
       habitLogs,
       transactions,
       budgets,
+      subscriptions,
       events,
       goals,
       focusSessions,
       currency
     } = req.body;
 
-    console.log(`[CloudSync] Received state for user ${req.userId}: ${tasks?.length || 0} tasks, ${habits?.length || 0} habits, ${transactions?.length || 0} transactions`);
+    console.log(`[CloudSync] Received state for user ${req.userId}: ${tasks?.length || 0} tasks, ${habits?.length || 0} habits, ${transactions?.length || 0} transactions, ${subscriptions?.length || 0} subscriptions`);
 
     const data = await UserData.findOneAndUpdate(
       { userId: req.userId },
       {
-        tasks: tasks || [],
-        habits: habits || [],
-        habitLogs: habitLogs || [],
-        transactions: transactions || [],
-        budgets: budgets || [],
-        events: events || [],
-        goals: goals || [],
-        focusSessions: focusSessions || [],
-        currency: currency || "INR"
+        $set: {
+          userId: req.userId,
+          tasks: tasks || [],
+          habits: habits || [],
+          habitLogs: habitLogs || [],
+          transactions: transactions || [],
+          budgets: budgets || [],
+          subscriptions: subscriptions || [],
+          events: events || [],
+          goals: goals || [],
+          focusSessions: focusSessions || [],
+          currency: currency || "INR"
+        }
       },
-      { new: true, upsert: true }
+      { returnDocument: "after", upsert: true, setDefaultsOnInsert: true }
     );
 
-    res.json({ success: true, updatedAt: data.updatedAt });
+    res.json({ success: true, updatedAt: data?.updatedAt || new Date() });
   } catch (err: any) {
     console.error("Sync state error:", err);
     res.status(500).json({ message: "Failed to sync user state" });

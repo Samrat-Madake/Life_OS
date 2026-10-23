@@ -39,6 +39,9 @@ export type Habit = {
 export type HabitLog = { habitId:string; date:string }; // date yyyy-mm-dd
 
 export type TxnType = "income"|"expense";
+
+export type PaymentMethod = "UPI" | "Credit Card" | "Debit Card" | "Cash" | "Net Banking";
+
 export type Transaction = {
   id:string
   type: TxnType
@@ -46,6 +49,20 @@ export type Transaction = {
   category:string
   description:string
   date:string // yyyy-mm-dd
+  paymentMethod?: PaymentMethod | string
+  subscriptionId?: string
+};
+
+export type Subscription = {
+  id: string
+  name: string
+  amountPaise: number
+  category: string
+  dueDay: number // 1 - 31
+  billingCycle: "monthly" | "yearly"
+  paymentMethod?: PaymentMethod | string
+  isActive: boolean
+  lastPaidMonth?: string // e.g. "2026-10"
 };
 
 export type Budget = { category:string; limitPaise:number };
@@ -96,6 +113,7 @@ export type AppState = {
   habitLogs:HabitLog[]
   transactions:Transaction[]
   budgets:Budget[]
+  subscriptions?:Subscription[]
   events:CalendarEvent[]
   goals:Goal[]
   focusSessions:FocusSession[]
