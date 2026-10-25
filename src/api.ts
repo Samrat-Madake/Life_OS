@@ -9,7 +9,10 @@ import {
   decryptState
 } from "./utils/crypto";
 
-const API_BASE = "http://localhost:5000/api";
+const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_BASE = rawApiUrl
+  ? (rawApiUrl.endsWith("/api") ? rawApiUrl.replace(/\/$/, "") : `${rawApiUrl.replace(/\/$/, "")}/api`)
+  : "http://localhost:5000/api";
 
 export function getToken(): string | null {
   return localStorage.getItem("lifeos:token");
@@ -23,7 +26,7 @@ export function setToken(token: string | null) {
   }
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 4000): Promise<Response> {
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 20000): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -48,7 +51,7 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, encryptionSalt: salt })
-    }, 6000);
+    }, 25000);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Registration failed");
     return data as { token: string; user: AuthUser };
@@ -60,7 +63,7 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
-    }, 6000);
+    }, 25000);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Login failed");
 
@@ -79,7 +82,7 @@ export const api = {
     try {
       const res = await fetchWithTimeout(`${API_BASE}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
-      }, 3000);
+      }, 10000);
       if (!res.ok) {
         if (res.status === 401 || res.status === 403 || res.status === 404) setToken(null);
         return null;
@@ -96,7 +99,7 @@ export const api = {
     try {
       const res = await fetchWithTimeout(`${API_BASE}/data/state`, {
         headers: { Authorization: `Bearer ${token}` }
-      }, 4000);
+      }, 15000);
       if (!res.ok) {
         if (res.status === 401 || res.status === 403 || res.status === 404) setToken(null);
         return null;
@@ -150,7 +153,7 @@ export const api = {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(bodyData)
-      }, 5000);
+      }, 15000);
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -163,6 +166,21 @@ export const api = {
       return { ok: true };
     } catch (err: any) {
       return { ok: false, error: err?.message || "Network unreachable" };
+    }
+  },
+
+  async checkHealth(): Promise<{ ok: boolean; dbConnected: boolean; message: string }> {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE}/health`, {}, 15000);
+      if (!res.ok) return { ok: false, dbConnected: false, message: `Status ${res.status}` };
+      const data = await res.json();
+      return {
+        ok: data.status === "ok",
+        dbConnected: data.dbState === "connected",
+        message: data.status === "ok" ? "Online" : "Starting..."
+      };
+    } catch (err: any) {
+      return { ok: false, dbConnected: false, message: err?.message || "Offline" };
     }
   }
 };

@@ -8,6 +8,7 @@
     "server": "tsx watch server/index.ts",
     "dev:all": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "tsc -b && vite build",
+    "start": "tsx server/index.ts",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -19,7 +20,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.11.3",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -32,7 +34,6 @@
     "@vitejs/plugin-react": "^6.1.2",
     "concurrently": "^10.0.6",
     "oxlint": "^1.88.0",
-    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "vite": "^8.3.4"
   }
