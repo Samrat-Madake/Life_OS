@@ -114,25 +114,25 @@ function TxnForm({ initial, defaultMonth, onClose, onSave }: { initial: any | nu
   };
 
   return (
-    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", display: "grid", placeItems: "center", zIndex: 50, padding: 16 }}>
-      <div className="card" style={{ width: "min(520px,100%)", padding: 16, animation: "pop .18s ease" }}>
+    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "grid", placeItems: "center", zIndex: 60, padding: 16 }}>
+      <div className="card" style={{ width: "min(520px,100%)", padding: 16, animation: "pop .18s ease", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h3 style={{ fontWeight: 900 }}>{initial ? "Edit transaction" : "New transaction"}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close dialog">✕</button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" className={`btn ${type === "expense" ? "btn-primary" : ""}`} onClick={() => handleTypeChange("expense")}>Expense</button>
-            <button type="button" className={`btn ${type === "income" ? "btn-primary" : ""}`} onClick={() => handleTypeChange("income")}>Income</button>
+            <button type="button" className={`btn ${type === "expense" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, minHeight: 40, fontWeight: 800 }} onClick={() => handleTypeChange("expense")}>Expense</button>
+            <button type="button" className={`btn ${type === "income" ? "btn-primary" : "btn-ghost"}`} style={{ flex: 1, minHeight: 40, fontWeight: 800 }} onClick={() => handleTypeChange("income")}>Income</button>
           </div>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Amount (INR) *
-            <input className="input" inputMode="decimal" placeholder="e.g., 1250.50" value={amount} onChange={e => setAmount(e.target.value)} />
+            <input className="input" inputMode="decimal" placeholder="e.g., 1250.50" value={amount} onChange={e => setAmount(e.target.value)} style={{ fontSize: 18, fontWeight: 800, minHeight: 44 }} />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="form-two-col">
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Category
-              <select className="select" value={category} onChange={e => setCategory(e.target.value)}>
+              <select className="select" value={category} onChange={e => setCategory(e.target.value)} style={{ minHeight: 40 }}>
                 {activeCategories.map(c => (
                   <option key={c} value={c}>
                     {getCategoryIcon(c, type)} {c}
@@ -147,7 +147,7 @@ function TxnForm({ initial, defaultMonth, onClose, onSave }: { initial: any | nu
             </label>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Payment Mode
-              <select className="select" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
+              <select className="select" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={{ minHeight: 40 }}>
                 {PAYMENT_METHODS.map(pm => (
                   <option key={pm} value={pm}>
                     {PAYMENT_ICONS[pm]} {pm}
@@ -156,21 +156,22 @@ function TxnForm({ initial, defaultMonth, onClose, onSave }: { initial: any | nu
               </select>
             </label>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="form-two-col">
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Date
-              <input className="input" type="date" value={date} onChange={e => setDate(e.target.value)} />
+              <input className="input" type="date" value={date} onChange={e => setDate(e.target.value)} style={{ minHeight: 40 }} />
             </label>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Description *
-              <input className="input" value={description} onChange={e => setDescription(e.target.value)} placeholder="What was this for?" />
+              <input className="input" value={description} onChange={e => setDescription(e.target.value)} placeholder="What was this for?" style={{ minHeight: 40 }} />
             </label>
           </div>
           {err && <div style={{ color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{err}</div>}
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 4 }}>
+            <button className="btn btn-ghost" style={{ minHeight: 40 }} onClick={onClose}>Cancel</button>
             <button
               className="btn btn-primary"
+              style={{ minHeight: 40, padding: "0 18px", fontWeight: 800 }}
               onClick={() => {
                 const n = Number(amount);
                 if (!Number.isFinite(n) || n <= 0) { setErr("Enter a valid amount > 0"); return; }
@@ -207,31 +208,31 @@ function SubscriptionModal({
   const [err, setErr] = useState<string | null>(null);
 
   return (
-    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", display: "grid", placeItems: "center", zIndex: 50, padding: 16 }}>
-      <div className="card" style={{ width: "min(440px,100%)", padding: 18, animation: "pop .18s ease" }}>
+    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "grid", placeItems: "center", zIndex: 60, padding: 16 }}>
+      <div className="card" style={{ width: "min(460px,100%)", padding: 18, animation: "pop .18s ease", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h3 style={{ fontWeight: 900 }}>{initial ? "Edit Recurring Commitment" : "Add Subscription / Recurring Bill"}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close dialog">✕</button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Service / Bill Name *
-            <input className="input" placeholder="e.g. Netflix, Spotify, Gym, Rent, Internet, SIP" value={name} onChange={e => setName(e.target.value)} />
+            <input className="input" placeholder="e.g. Netflix, Spotify, Gym, Rent, Internet, SIP" value={name} onChange={e => setName(e.target.value)} style={{ minHeight: 40 }} />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="form-two-col">
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Amount (INR) *
-              <input className="input" inputMode="decimal" placeholder="e.g. 649" value={amount} onChange={e => setAmount(e.target.value)} />
+              <input className="input" inputMode="decimal" placeholder="e.g. 649" value={amount} onChange={e => setAmount(e.target.value)} style={{ minHeight: 40 }} />
             </label>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Due Day of Month (1-31) *
-              <input className="input" type="number" min="1" max="31" value={dueDay} onChange={e => setDueDay(e.target.value)} />
+              <input className="input" type="number" min="1" max="31" value={dueDay} onChange={e => setDueDay(e.target.value)} style={{ minHeight: 40 }} />
             </label>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="form-two-col">
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Category
-              <select className="select" value={category} onChange={e => setCategory(e.target.value)}>
+              <select className="select" value={category} onChange={e => setCategory(e.target.value)} style={{ minHeight: 40 }}>
                 {EXPENSE_CATEGORIES.map(c => (
                   <option key={c} value={c}>
                     {getCategoryIcon(c, "expense")} {c}
@@ -241,7 +242,7 @@ function SubscriptionModal({
             </label>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Payment Mode
-              <select className="select" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
+              <select className="select" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} style={{ minHeight: 40 }}>
                 {PAYMENT_METHODS.map(pm => (
                   <option key={pm} value={pm}>
                     {PAYMENT_ICONS[pm]} {pm}
@@ -252,16 +253,17 @@ function SubscriptionModal({
           </div>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Billing Cycle
-            <select className="select" value={billingCycle} onChange={e => setBillingCycle(e.target.value as any)}>
+            <select className="select" value={billingCycle} onChange={e => setBillingCycle(e.target.value as any)} style={{ minHeight: 40 }}>
               <option value="monthly">Monthly</option>
               <option value="yearly">Yearly (Annual)</option>
             </select>
           </label>
           {err && <div style={{ color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{err}</div>}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 6 }}>
-            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn-ghost" style={{ minHeight: 38 }} onClick={onClose}>Cancel</button>
             <button
               className="btn btn-primary"
+              style={{ minHeight: 38, padding: "0 18px", fontWeight: 800 }}
               onClick={() => {
                 if (!name.trim()) { setErr("Name is required"); return; }
                 const n = Number(amount);
@@ -294,28 +296,29 @@ function BudgetModal({ initial, onClose, onSave }: { initial: any | null; onClos
   const [err, setErr] = useState<string | null>(null);
 
   return (
-    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", display: "grid", placeItems: "center", zIndex: 50, padding: 16 }}>
-      <div className="card" style={{ width: "min(420px,100%)", padding: 16, animation: "pop .18s ease" }}>
+    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "grid", placeItems: "center", zIndex: 60, padding: 16 }}>
+      <div className="card" style={{ width: "min(440px,100%)", padding: 16, animation: "pop .18s ease", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h3 style={{ fontWeight: 900 }}>{initial ? "Edit budget" : "Set monthly budget"}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close dialog">✕</button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Expense Category
-            <select className="select" value={category} onChange={e => setCategory(e.target.value)} disabled={!!initial}>
+            <select className="select" value={category} onChange={e => setCategory(e.target.value)} disabled={!!initial} style={{ minHeight: 40 }}>
               {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </label>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Monthly Limit (INR) *
-            <input className="input" inputMode="decimal" placeholder="e.g., 10000" value={amount} onChange={e => setAmount(e.target.value)} />
+            <input className="input" inputMode="decimal" placeholder="e.g., 10000" value={amount} onChange={e => setAmount(e.target.value)} style={{ minHeight: 40, fontSize: 16, fontWeight: 800 }} />
           </label>
           {err && <div style={{ color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{err}</div>}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 6 }}>
-            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn-ghost" style={{ minHeight: 38 }} onClick={onClose}>Cancel</button>
             <button
               className="btn btn-primary"
+              style={{ minHeight: 38, padding: "0 18px", fontWeight: 800 }}
               onClick={() => {
                 const n = Number(amount);
                 if (!Number.isFinite(n) || n <= 0) { setErr("Enter a valid amount > 0"); return; }
@@ -352,6 +355,7 @@ export function FinanceView({ q }: { q: string }) {
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
   const [timeScope, setTimeScope] = useState<"month" | "all">("month");
   const [activeSideTab, setActiveSideTab] = useState<"budgets" | "subscriptions">("budgets");
+  const [mobileTab, setMobileTab] = useState<"transactions" | "budgets" | "subscriptions">("transactions");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
@@ -551,23 +555,24 @@ export function FinanceView({ q }: { q: string }) {
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: 10,
-          padding: "10px 16px",
+          gap: 8,
+          padding: "8px 12px",
           background: "var(--bg-elev)",
           borderRadius: 14,
           border: "1px solid var(--border)",
           boxShadow: "0 2px 8px rgba(0,0,0,0.12)"
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={goToPrevMonth}
             title="Previous month"
-            style={{ fontWeight: 800, padding: "6px 12px" }}
+            style={{ fontWeight: 800, minWidth: 38, minHeight: 38, padding: "0 10px", fontSize: 16 }}
+            aria-label="Previous month"
           >
-            « Prev
+            ‹
           </button>
           
           {/* Interactive Month Picker */}
@@ -576,9 +581,10 @@ export function FinanceView({ q }: { q: string }) {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 6,
                 cursor: "pointer",
-                padding: "6px 14px",
+                padding: "6px 12px",
+                minHeight: 38,
                 borderRadius: 10,
                 background: "var(--bg-elev2)",
                 border: "1px solid var(--border)",
@@ -586,12 +592,12 @@ export function FinanceView({ q }: { q: string }) {
               }}
               title="Click to jump to any month"
             >
-              <span style={{ fontSize: 16 }}>🗓️</span>
-              <span style={{ fontWeight: 900, fontSize: 15 }}>{monthLabel}</span>
-              <span className="badge mono" style={{ fontSize: 11, background: "var(--bg-elev)", padding: "2px 6px" }}>
+              <span style={{ fontSize: 15 }}>🗓️</span>
+              <span style={{ fontWeight: 900, fontSize: 14, whiteSpace: "nowrap" }}>{monthLabel}</span>
+              <span className="badge mono desktop-only" style={{ fontSize: 10, background: "var(--bg-elev)", padding: "2px 5px" }}>
                 {selectedMonth}
               </span>
-              <span style={{ fontSize: 10, opacity: 0.6 }}>▼</span>
+              <span style={{ fontSize: 9, opacity: 0.6 }}>▼</span>
               <input
                 type="month"
                 value={selectedMonth}
@@ -613,21 +619,22 @@ export function FinanceView({ q }: { q: string }) {
             className="btn btn-ghost btn-sm"
             onClick={goToNextMonth}
             title="Next month"
-            style={{ fontWeight: 800, padding: "6px 12px" }}
+            style={{ fontWeight: 800, minWidth: 38, minHeight: 38, padding: "0 10px", fontSize: 16 }}
+            aria-label="Next month"
           >
-            Next »
+            ›
           </button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {selectedMonth !== currentRealMonth && (
             <button
               type="button"
               className="btn btn-sm btn-ghost"
               onClick={goToCurrentMonth}
-              style={{ color: "var(--accent)", fontWeight: 700, fontSize: 12, display: "inline-flex", alignItems: "center", gap: 5 }}
+              style={{ color: "var(--accent)", fontWeight: 700, fontSize: 12, minHeight: 36, display: "inline-flex", alignItems: "center", gap: 4, padding: "0 10px" }}
             >
-              <span>•</span> Current Month
+              <span>•</span> Current
             </button>
           )}
           <button
@@ -635,44 +642,74 @@ export function FinanceView({ q }: { q: string }) {
             className="btn btn-sm"
             onClick={exportToCSV}
             title="Download filtered transactions as CSV file"
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 700, minHeight: 36, padding: "0 10px", fontSize: 12 }}
           >
-            <span>📥</span> Export CSV ({filtered.length})
+            <span>📥</span> <span className="desktop-only">Export CSV</span><span className="mobile-only">CSV</span> ({filtered.length})
           </button>
         </div>
       </div>
 
-      {/* Top 4 Financial Metric Cards */}
-      <div className="finance-hero-metrics" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
-        <div className="card" style={{ padding: 14 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>Income ({monthLabel})</div>
-          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4 }}>{fmtINR(income)}</div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{selectedMonth} • {monthTx.filter(t => t.type === "income").length} deposits</div>
+      {/* Top 4 Financial Metric Cards: 2x2 on Mobile */}
+      <div className="finance-hero-metrics">
+        <div className="card" style={{ padding: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>Income</div>
+          <div style={{ fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 900, marginTop: 4, color: "var(--success)" }}>{fmtINR(income)}</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {monthTx.filter(t => t.type === "income").length} deposits
+          </div>
         </div>
-        <div className="card" style={{ padding: 14 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>Expenses ({monthLabel})</div>
-          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4 }}>{fmtINR(expense)}</div>
+        <div className="card" style={{ padding: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>Expenses</div>
+          <div style={{ fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 900, marginTop: 4 }}>{fmtINR(expense)}</div>
           <div className="progress-track" style={{ marginTop: 8 }}>
             <div className="progress-fill" style={{ width: Math.min(100, income ? Math.round(expense / income * 100) : 0) + "%", background: expense > income ? "var(--danger)" : "var(--warn)" }} />
           </div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
-            {income ? `${Math.round((expense / income) * 100)}% of income spent` : "No income recorded"}
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {income ? `${Math.round((expense / income) * 100)}% spent` : "No income"}
           </div>
         </div>
-        <div className="card" style={{ padding: 14 }}>
+        <div className="card" style={{ padding: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>Net Cash Flow</div>
-          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4, color: remaining < 0 ? "var(--danger)" : "var(--success)" }}>{fmtINR(remaining)}</div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+          <div style={{ fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 900, marginTop: 4, color: remaining < 0 ? "var(--danger)" : "var(--success)" }}>{fmtINR(remaining)}</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {remaining < 0 ? "🚨 Net Deficit" : "🟢 Positive Surplus"}
           </div>
         </div>
         <SavingsRateCard income={income} expense={expense} monthLabel={monthLabel} />
       </div>
 
-      {/* Operational 2-Column Section */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 12 }}>
+      {/* Mobile Segmented Tabs: [ Transactions ] | [ Budgets ] | [ Subscriptions ] */}
+      <div className="finance-mobile-tabs" style={{ background: "var(--bg-elev2)", padding: 4, borderRadius: 12, border: "1px solid var(--border)", gap: 4 }}>
+        <button
+          type="button"
+          className={`btn btn-sm ${mobileTab === "transactions" ? "btn-primary" : "btn-ghost"}`}
+          onClick={() => setMobileTab("transactions")}
+          style={{ flex: 1, minHeight: 38, fontWeight: 800, fontSize: 12, padding: "0 6px" }}
+        >
+          💳 Txns ({filtered.length})
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${mobileTab === "budgets" ? "btn-primary" : "btn-ghost"}`}
+          onClick={() => { setMobileTab("budgets"); setActiveSideTab("budgets"); }}
+          style={{ flex: 1, minHeight: 38, fontWeight: 800, fontSize: 12, padding: "0 6px" }}
+        >
+          🎯 Budgets ({budgetRows.length})
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${mobileTab === "subscriptions" ? "btn-primary" : "btn-ghost"}`}
+          onClick={() => { setMobileTab("subscriptions"); setActiveSideTab("subscriptions"); }}
+          style={{ flex: 1, minHeight: 38, fontWeight: 800, fontSize: 12, padding: "0 6px" }}
+        >
+          🔄 Subs ({subscriptions.length})
+        </button>
+      </div>
+
+      {/* Operational 2-Column Section (Desktop 2-Col, Mobile Single View Via Segmented Tabs) */}
+      <div className="finance-main-grid">
         {/* Left: Transactions */}
-        <div className="card" style={{ padding: 14 }}>
+        <div className={`card ${mobileTab !== "transactions" ? "finance-col-hidden-mobile" : ""}`} style={{ padding: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <h3 style={{ fontWeight: 900 }}>Transactions</h3>
@@ -695,7 +732,7 @@ export function FinanceView({ q }: { q: string }) {
                 </button>
               </div>
             </div>
-            <button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setShowForm(true); }}>＋ Add transaction</button>
+            <button className="btn btn-primary btn-sm" style={{ minHeight: 36 }} onClick={() => { setEditing(null); setShowForm(true); }}>＋ Add transaction</button>
           </div>
 
           {/* Filters Row */}
@@ -803,8 +840,8 @@ export function FinanceView({ q }: { q: string }) {
         </div>
 
         {/* Right: Spending Breakdown & Tabbed Budgets / Subscriptions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div className="card" style={{ padding: 14 }}>
+        <div className={mobileTab === "transactions" ? "finance-col-hidden-mobile" : ""} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className={`card ${mobileTab === "subscriptions" ? "desktop-only" : ""}`} style={{ padding: 14 }}>
             <h3 style={{ fontWeight: 900, fontSize: 14 }}>Spending breakdown</h3>
             <Donut data={expByCat} />
           </div>
@@ -812,7 +849,7 @@ export function FinanceView({ q }: { q: string }) {
           {/* Tabbed Budgets & Subscriptions Card */}
           <div className="card" style={{ padding: 14 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, borderBottom: "1px solid var(--border)", paddingBottom: 10 }}>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div className="desktop-only" style={{ display: "flex", gap: 6 }}>
                 <button
                   type="button"
                   className={`btn btn-sm ${activeSideTab === "budgets" ? "btn-primary" : "btn-ghost"}`}
@@ -830,13 +867,16 @@ export function FinanceView({ q }: { q: string }) {
                   🔄 Subscriptions ({subscriptions.length})
                 </button>
               </div>
+              <div className="mobile-only" style={{ fontWeight: 900, fontSize: 14 }}>
+                {activeSideTab === "budgets" ? `🎯 Budgets (${budgetRows.length})` : `🔄 Recurring Subs (${subscriptions.length})`}
+              </div>
 
               {activeSideTab === "budgets" ? (
-                <button className="btn btn-primary btn-sm" onClick={() => { setEditingBudget(null); setShowBudgetModal(true); }}>
+                <button className="btn btn-primary btn-sm" style={{ minHeight: 36 }} onClick={() => { setEditingBudget(null); setShowBudgetModal(true); }}>
                   ＋ Set budget
                 </button>
               ) : (
-                <button className="btn btn-primary btn-sm" onClick={() => { setEditingSub(null); setShowSubModal(true); }}>
+                <button className="btn btn-primary btn-sm" style={{ minHeight: 36 }} onClick={() => { setEditingSub(null); setShowSubModal(true); }}>
                   ＋ Add recurring
                 </button>
               )}
@@ -854,8 +894,8 @@ export function FinanceView({ q }: { q: string }) {
                       </span>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ color: b.over ? "var(--danger)" : "var(--text-muted)" }}>{fmtINR(b.spent)} / {fmtINR(b.limitPaise)}</span>
-                        <button className="btn btn-ghost btn-sm" style={{ padding: "2px 6px", fontSize: 11 }} onClick={() => { setEditingBudget(b); setShowBudgetModal(true); }} title="Edit budget">✏️</button>
-                        <button className="btn btn-ghost btn-sm" style={{ padding: "2px 6px", fontSize: 11, color: "var(--danger)" }} onClick={() => { if (confirm(`Delete budget for ${b.category}?`)) deleteBudget(b.category); }} title="Delete budget">✕</button>
+                        <button className="btn btn-ghost btn-sm" style={{ minWidth: 32, minHeight: 32, padding: "0 6px", fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center" }} onClick={() => { setEditingBudget(b); setShowBudgetModal(true); }} aria-label="Edit budget" title="Edit budget">✏️</button>
+                        <button className="btn btn-ghost btn-sm" style={{ minWidth: 32, minHeight: 32, padding: "0 6px", fontSize: 12, color: "var(--danger)", display: "inline-flex", alignItems: "center", justifyContent: "center" }} onClick={() => { if (confirm(`Delete budget for ${b.category}?`)) deleteBudget(b.category); }} aria-label="Delete budget" title="Delete budget">✕</button>
                       </div>
                     </div>
                     <div className="progress-track" style={{ marginTop: 6 }}>
@@ -980,12 +1020,13 @@ export function FinanceView({ q }: { q: string }) {
                           >
                             {isPaid ? "✅ Paid (Undo)" : "⚡ Mark Paid"}
                           </button>
-                          <div style={{ display: "flex", gap: 4 }}>
+                          <div style={{ display: "flex", gap: 6 }}>
                             <button
                               type="button"
                               className="btn btn-ghost btn-sm"
                               onClick={() => toggleSubscription(s.id)}
-                              style={{ fontSize: 11, padding: "2px 6px" }}
+                              style={{ fontSize: 12, minWidth: 32, minHeight: 32, padding: "0 6px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              aria-label={s.isActive ? "Pause subscription" : "Resume subscription"}
                               title={s.isActive ? "Pause subscription" : "Resume subscription"}
                             >
                               {s.isActive ? "⏸️" : "▶️"}
@@ -994,7 +1035,8 @@ export function FinanceView({ q }: { q: string }) {
                               type="button"
                               className="btn btn-ghost btn-sm"
                               onClick={() => { setEditingSub(s); setShowSubModal(true); }}
-                              style={{ fontSize: 11, padding: "2px 6px" }}
+                              style={{ fontSize: 12, minWidth: 32, minHeight: 32, padding: "0 6px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              aria-label="Edit subscription"
                               title="Edit"
                             >
                               ✏️
@@ -1003,7 +1045,8 @@ export function FinanceView({ q }: { q: string }) {
                               type="button"
                               className="btn btn-ghost btn-sm"
                               onClick={() => { if (confirm(`Delete ${s.name}?`)) deleteSubscription(s.id); }}
-                              style={{ fontSize: 11, padding: "2px 6px", color: "var(--danger)" }}
+                              style={{ fontSize: 12, minWidth: 32, minHeight: 32, padding: "0 6px", color: "var(--danger)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              aria-label="Delete subscription"
                               title="Delete"
                             >
                               ✕
@@ -1078,16 +1121,6 @@ export function FinanceView({ q }: { q: string }) {
           }}
         />
       )}
-
-      <style>{`
-        @media(max-width:1050px){ 
-          .finance-hero-metrics { grid-template-columns: 1fr 1fr !important; } 
-          div[style*="1.1fr .9fr"]{ grid-template-columns: 1fr !important; } 
-        }
-        @media(max-width:600px){ 
-          .finance-hero-metrics { grid-template-columns: 1fr !important; } 
-        }
-      `}</style>
     </div>
   );
 }

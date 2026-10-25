@@ -47,15 +47,17 @@ export function TaskRow({
           aria-label="Toggle complete"
           onClick={onToggle}
           style={{
-            width: 22,
-            height: 22,
-            borderRadius: 7,
+            width: 24,
+            height: 24,
+            minWidth: 24,
+            minHeight: 24,
+            borderRadius: 8,
             border: "1px solid " + (t.status === "done" ? "var(--success)" : "var(--border)"),
             background: t.status === "done" ? "var(--success)" : "transparent",
             color: "white",
             display: "grid",
             placeItems: "center",
-            fontSize: 12,
+            fontSize: 13,
             cursor: "pointer",
             flexShrink: 0
           }}
@@ -76,7 +78,9 @@ export function TaskRow({
             }}
           >
             {t.title}
-            <span style={{ width: 8, height: 8, borderRadius: 99, background: priorityColor[t.priority] }} title={t.priority} />
+            <span className="badge" style={{ fontSize: 10, padding: "1px 6px", textTransform: "capitalize", background: `${priorityColor[t.priority]}15`, color: priorityColor[t.priority], borderColor: `${priorityColor[t.priority]}35` }}>
+              ● {t.priority}
+            </span>
             <span className="badge" style={{ background: "var(--bg-elev2)" }}>{t.category}</span>
             {overdue && <span className="badge" style={{ background: "#ef444418", color: "var(--danger)", borderColor: "#ef444430" }}>Overdue</span>}
             {t.goalId && <span className="badge" style={{ background: "#7c6cff18", color: "var(--accent)", borderColor: "#7c6cff30" }}>Goal-linked</span>}
@@ -191,21 +195,21 @@ export function TaskForm({
 
   return (
     <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", display: "grid", placeItems: "center", zIndex: 50, padding: 16 }}>
-      <div className="card" style={{ width: "min(580px, 100%)", padding: 16, animation: "pop .18s ease", maxHeight: "90vh", overflow: "auto" }}>
+      <div className="card" style={{ width: "min(580px, 100%)", padding: "clamp(16px, 3.5vw, 22px)", animation: "pop .18s ease", maxHeight: "90vh", overflow: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h3 style={{ fontWeight: 900 }}>{initial ? "Edit task" : "New task"}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+          <h3 style={{ fontWeight: 900, fontSize: 16 }}>{initial ? "Edit task" : "New task"}</h3>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} style={{ padding: "4px 8px" }}>✕</button>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
             Title *
             <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="What needs to be done?" />
           </label>
           <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
             Description
-            <textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} placeholder="Details (optional)" />
+            <textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} placeholder="Details (optional)" rows={3} />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="form-two-col">
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Priority
               <select className="select" value={priority} onChange={e => setPriority(e.target.value as Priority)}>
@@ -222,7 +226,7 @@ export function TaskForm({
               </select>
             </label>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className="form-two-col">
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Due date
               <input className="input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
@@ -245,43 +249,50 @@ export function TaskForm({
           </label>
 
           {/* Subtasks Builder */}
-          <div style={{ padding: 12, borderRadius: 10, background: "var(--bg-elev2)", border: "1px solid var(--border)" }}>
+          <div style={{ padding: "12px 14px", borderRadius: 12, background: "var(--bg-elev2)", border: "1px solid var(--border)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 12, fontWeight: 800 }}>
-                Subtasks & Checklist ({subtasks.filter(s => s.completed).length}/{subtasks.length})
+                Subtasks Checklist ({subtasks.filter(s => s.completed).length}/{subtasks.length})
               </span>
             </div>
 
-            <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
               <input
                 className="input"
-                placeholder="Add subtask item…"
+                placeholder="Add checklist item…"
                 value={newSubtaskTitle}
                 onChange={e => setNewSubtaskTitle(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSubtaskItem(); } }}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minHeight: 38 }}
               />
-              <button type="button" className="btn btn-sm" onClick={addSubtaskItem}>＋ Add</button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={addSubtaskItem}
+                style={{ minHeight: 38, padding: "0 14px", fontWeight: 700, borderRadius: 8 }}
+              >
+                ＋ Add
+              </button>
             </div>
 
             {subtasks.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflowY: "auto" }}>
                 {subtasks.map(st => (
-                  <div key={st.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", background: "var(--card)", borderRadius: 8, border: "1px solid var(--border)" }}>
+                  <div key={st.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "var(--card)", borderRadius: 8, border: "1px solid var(--border)" }}>
                     <input
                       type="checkbox"
                       checked={st.completed}
                       onChange={() => setSubtasks(prev => prev.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s))}
-                      style={{ cursor: "pointer" }}
+                      style={{ width: 16, height: 16, cursor: "pointer" }}
                     />
-                    <span style={{ flex: 1, fontSize: 12, fontWeight: 600, textDecoration: st.completed ? "line-through" : "none", opacity: st.completed ? 0.6 : 1 }}>
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 600, textDecoration: st.completed ? "line-through" : "none", opacity: st.completed ? 0.6 : 1, wordBreak: "break-word" }}>
                       {st.title}
                     </span>
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm"
                       onClick={() => setSubtasks(prev => prev.filter(s => s.id !== st.id))}
-                      style={{ padding: "2px 6px", color: "var(--danger)", fontSize: 11 }}
+                      style={{ padding: "4px 8px", color: "var(--danger)", fontSize: 12, minWidth: 28, minHeight: 28 }}
                       title="Remove subtask"
                     >
                       ✕
@@ -293,9 +304,9 @@ export function TaskForm({
           </div>
 
           {err && <div style={{ color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{err}</div>}
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
-            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-            <button className="btn btn-primary" onClick={() => {
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8, flexWrap: "wrap" }}>
+            <button className="btn btn-ghost" style={{ minHeight: 38, flex: 1 }} onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" style={{ minHeight: 38, flex: 2, fontWeight: 700 }} onClick={() => {
               if (!title.trim()) { setErr("Title is required."); return; }
               onSave({
                 title: title.trim(),

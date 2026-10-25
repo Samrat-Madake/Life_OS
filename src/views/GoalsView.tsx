@@ -15,60 +15,61 @@ function GoalForm({ initial, onClose, onSave }: { initial: any | null; onClose: 
   const [err, setErr] = useState<string | null>(null);
 
   return (
-    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", display: "grid", placeItems: "center", zIndex: 50, padding: 16 }}>
-      <div className="card" style={{ width: "min(640px,100%)", padding: 16, animation: "pop .18s ease", maxHeight: "90vh", overflow: "auto" }}>
+    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "grid", placeItems: "center", zIndex: 60, padding: 16 }}>
+      <div className="card" style={{ width: "min(640px,100%)", padding: 16, animation: "pop .18s ease", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h3 style={{ fontWeight: 900 }}>{initial ? "Edit goal" : "New goal"}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close dialog">✕</button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Title *
-            <input className="input" value={title} onChange={e => setTitle(e.target.value)} />
+            <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., Run a Half Marathon" style={{ minHeight: 40 }} />
           </label>
           <label style={{ fontSize: 12, fontWeight: 700 }}>
             Description
-            <textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} />
+            <textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} placeholder="Why is this goal important to you?" rows={3} />
           </label>
           <div>
             <label style={{ fontSize: 12, fontWeight: 700 }}>
               Deadline
-              <input className="input" type="date" value={deadline} onChange={e => setDeadline(e.target.value)} />
+              <input className="input" type="date" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ minHeight: 40 }} />
             </label>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: 12, fontWeight: 700 }}>Color</span>
             <ColorPicker value={color} onChange={setColor} />
           </div>
-          <div style={{ padding: 10, borderRadius: 10, background: "var(--bg-elev2)", border: "1px solid var(--border)" }}>
+          <div style={{ padding: 12, borderRadius: 10, background: "var(--bg-elev2)", border: "1px solid var(--border)" }}>
             <div style={{ fontSize: 12, fontWeight: 800 }}>Measurable target (optional)</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 8 }}>
-              <input className="input" placeholder="Target value (e.g., 100)" value={targetValue} onChange={e => setTargetValue(e.target.value)} />
-              <input className="input" placeholder="Current value" value={currentValue} onChange={e => setCurrentValue(e.target.value)} />
-              <input className="input" placeholder="Unit (km, paise, books…)" value={unit} onChange={e => setUnit(e.target.value)} />
+            <div className="form-three-col" style={{ marginTop: 8 }}>
+              <input className="input" inputMode="decimal" placeholder="Target value (e.g. 100)" value={targetValue} onChange={e => setTargetValue(e.target.value)} style={{ minHeight: 38 }} />
+              <input className="input" inputMode="decimal" placeholder="Current value" value={currentValue} onChange={e => setCurrentValue(e.target.value)} style={{ minHeight: 38 }} />
+              <input className="input" placeholder="Unit (km, books…)" value={unit} onChange={e => setUnit(e.target.value)} style={{ minHeight: 38 }} />
             </div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>If set, progress derives from current/target instead of milestones. Leave blank to use milestones.</div>
           </div>
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              Milestones
-              <button className="btn btn-sm" onClick={() => setMilestones(m => [...m, { id: uid(), title: "", completed: false, dueDate: "" }])}>＋ Add</button>
+              Milestones *
+              <button type="button" className="btn btn-sm btn-ghost" style={{ minHeight: 32 }} onClick={() => setMilestones(m => [...m, { id: uid(), title: "", completed: false, dueDate: "" }])}>＋ Add milestone</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
               {milestones.map((ms, idx) => (
-                <div key={ms.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <input className="input" placeholder="Milestone title" value={ms.title} onChange={e => setMilestones(arr => arr.map((x, i) => i === idx ? { ...x, title: e.target.value } : x))} style={{ flex: 1 }} />
-                  <input className="input" type="date" value={ms.dueDate} onChange={e => setMilestones(arr => arr.map((x, i) => i === idx ? { ...x, dueDate: e.target.value } : x))} style={{ width: 160 }} />
-                  <button className="btn btn-sm btn-ghost" style={{ color: "var(--danger)" }} onClick={() => setMilestones(arr => arr.filter((_, i) => i !== idx))}>✕</button>
+                <div key={ms.id} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", background: "var(--bg-elev2)", padding: 8, borderRadius: 10, border: "1px solid var(--border)" }}>
+                  <input className="input" placeholder="Milestone title" value={ms.title} onChange={e => setMilestones(arr => arr.map((x, i) => i === idx ? { ...x, title: e.target.value } : x))} style={{ flex: "1 1 180px", minHeight: 38 }} />
+                  <input className="input" type="date" value={ms.dueDate} onChange={e => setMilestones(arr => arr.map((x, i) => i === idx ? { ...x, dueDate: e.target.value } : x))} style={{ width: "min(150px, 100%)", minHeight: 38 }} />
+                  <button type="button" className="btn btn-sm btn-ghost" style={{ color: "var(--danger)", minHeight: 38, minWidth: 38 }} onClick={() => setMilestones(arr => arr.filter((_, i) => i !== idx))} aria-label="Delete milestone">✕</button>
                 </div>
               ))}
             </div>
           </div>
           {err && <div style={{ color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{err}</div>}
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-            <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 6 }}>
+            <button className="btn btn-ghost" style={{ minHeight: 40 }} onClick={onClose}>Cancel</button>
             <button
               className="btn btn-primary"
+              style={{ minHeight: 40, padding: "0 18px", fontWeight: 800 }}
               onClick={() => {
                 if (!title.trim()) { setErr("Title required"); return; }
                 const clean = milestones.filter(m => m.title.trim()).map(m => ({ id: m.id, title: m.title.trim(), completed: m.completed, dueDate: m.dueDate || null }));
@@ -93,17 +94,24 @@ export function GoalsView({ q }: { q: string }) {
   const [query, setQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [expandedGoals, setExpandedGoals] = useState<Record<string, boolean>>({});
   const combinedQ = (q + " " + query).trim().toLowerCase();
   const filtered = useMemo(() => state.goals.filter(g => !combinedQ || (g.title + " " + g.description).toLowerCase().includes(combinedQ)), [state.goals, combinedQ]);
 
+  const toggleExpanded = (id: string) => {
+    setExpandedGoals(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div className="card" style={{ padding: 12, display: "flex", gap: 8, alignItems: "center" }}>
-        <input className="input" placeholder="Search goals…" value={query} onChange={e => setQuery(e.target.value)} style={{ flex: 1 }} />
-        <button className="btn btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>＋ New goal</button>
+      <div className="card" style={{ padding: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <input className="input" placeholder="Search goals…" value={query} onChange={e => setQuery(e.target.value)} style={{ flex: "1 1 180px", minHeight: 40 }} />
+        <button className="btn btn-primary" style={{ minHeight: 40, whiteSpace: "nowrap", padding: "0 16px" }} onClick={() => { setEditing(null); setShowForm(true); }}>
+          ＋ New goal
+        </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
+      <div className="goals-cards-grid">
         {filtered.map(g => {
           const done = g.milestones.filter(m => m.completed).length;
           const pctMilestone = g.milestones.length ? Math.round(done / g.milestones.length * 100) : 0;
@@ -113,43 +121,182 @@ export function GoalsView({ q }: { q: string }) {
           const isOverdue = new Date(g.deadline + "T23:59:59") < new Date() && pct < 100;
           const linkedTasks = state.tasks.filter(t => t.goalId === g.id);
           const linkedDone = linkedTasks.filter(t => t.status === "done").length;
+          const isExpanded = !!expandedGoals[g.id];
+
           return (
-            <div key={g.id} className="card" style={{ padding: 14, position: "relative", overflow: "hidden" }}>
+            <div key={g.id} className="card" style={{ padding: 16, position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", inset: 0, background: `radial-gradient(400px 160px at 0% 0%, ${g.color}14, transparent 60%)` }} />
               <div style={{ position: "relative" }}>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: g.color, display: "grid", placeItems: "center", color: "white", fontWeight: 900 }}>⬢</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 900, fontSize: 14 }}>{g.title}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Due {g.deadline} {isOverdue && <span className="badge" style={{ background: "#ef444418", color: "var(--danger)" }}>Overdue</span>}</div>
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: g.color, display: "grid", placeItems: "center", color: "white", fontWeight: 900, fontSize: 16, flexShrink: 0 }}>
+                    ⬢
                   </div>
-                  <div style={{ textAlign: "right" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 900, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.title}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+                      <span>Due {g.deadline}</span>
+                      {isOverdue && <span className="badge" style={{ background: "#ef444418", color: "var(--danger)", fontSize: 10, padding: "1px 6px" }}>Overdue</span>}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <div style={{ fontWeight: 900, fontSize: 18 }}>{pct}%</div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700 }}>{done}/{g.milestones.length} milestones</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700 }}>{done}/{g.milestones.length} done</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8, lineHeight: 1.5 }}>{g.description}</div>
-                <div className="progress-track" style={{ marginTop: 10 }}><div className="progress-fill" style={{ width: pct + "%", background: g.color }} /></div>
+
+                {g.description && (
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8, lineHeight: 1.5 }}>
+                    {g.description}
+                  </div>
+                )}
+
+                <div className="progress-track" style={{ marginTop: 10 }}>
+                  <div className="progress-fill" style={{ width: pct + "%", background: g.color }} />
+                </div>
+
                 {g.targetValue !== null && g.targetValue !== undefined && (
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6, fontWeight: 700 }}>
                     Measurable: {fmtINR(g.unit === "paise" ? (g.currentValue || 0) : 0)} / {g.unit === "paise" ? fmtINR(g.targetValue) : g.targetValue + " " + (g.unit || "")}
                   </div>
                 )}
-                {linkedTasks.length > 0 && <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6, fontWeight: 700 }}>Tasks: {linkedDone}/{linkedTasks.length} completed</div>}
-                {overdueMilestones.length > 0 && <div style={{ marginTop: 8, padding: "6px 8px", borderRadius: 8, background: "#ef444418", border: "1px solid #ef444430", color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>⚠ {overdueMilestones.length} overdue milestone(s): {overdueMilestones.map(m => m.title).join(", ")}</div>}
+                {linkedTasks.length > 0 && (
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, fontWeight: 700 }}>
+                    Tasks: {linkedDone}/{linkedTasks.length} completed
+                  </div>
+                )}
+                {overdueMilestones.length > 0 && (
+                  <div style={{ marginTop: 8, padding: "6px 8px", borderRadius: 8, background: "#ef444418", border: "1px solid #ef444430", color: "var(--danger)", fontSize: 11, fontWeight: 700 }}>
+                    ⚠ {overdueMilestones.length} overdue milestone(s)
+                  </div>
+                )}
 
-                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                  {g.milestones.map(ms => (
-                    <label key={ms.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, background: "var(--bg-elev2)", border: "1px solid var(--border)", cursor: "pointer" }}>
-                      <input type="checkbox" checked={ms.completed} onChange={() => toggleMilestone(g.id, ms.id)} />
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, textDecoration: ms.completed ? "line-through" : "none", opacity: ms.completed ? 0.6 : 1 }}>{ms.title}</span>
-                      {ms.dueDate && <span className="badge" style={{ background: !ms.completed && ms.dueDate && new Date(ms.dueDate + "T23:59:59") < new Date() ? "#ef444418" : "var(--bg-elev)", color: !ms.completed && ms.dueDate && new Date(ms.dueDate + "T23:59:59") < new Date() ? "var(--danger)" : "var(--text-muted)" }}>{ms.dueDate}</span>}
-                    </label>
-                  ))}
+                {/* Milestone Checklist Accordion */}
+                <div style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text)" }}>Milestones</span>
+                      <span className="badge" style={{ fontSize: 10, background: "var(--bg-elev2)", padding: "1px 6px" }}>
+                        {done}/{g.milestones.length}
+                      </span>
+                    </div>
+                    {g.milestones.length > 0 && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => toggleExpanded(g.id)}
+                        style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", minHeight: 28, display: "inline-flex", alignItems: "center", gap: 4 }}
+                        aria-expanded={isExpanded}
+                      >
+                        <span>{isExpanded ? "Collapse" : `View all (${g.milestones.length})`}</span>
+                        <span style={{ fontSize: 9 }}>{isExpanded ? "▲" : "▼"}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {!isExpanded ? (
+                    /* Collapsed: Show Next Pending Milestone or All Complete Badge */
+                    done === g.milestones.length && g.milestones.length > 0 ? (
+                      <div style={{ fontSize: 12, color: "var(--success)", fontWeight: 700, marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                        ✓ All milestones completed!
+                      </div>
+                    ) : (
+                      (() => {
+                        const nextPending = g.milestones.find(m => !m.completed) || g.milestones[0];
+                        if (!nextPending) return null;
+                        return (
+                          <label
+                            key={nextPending.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              padding: "8px 10px",
+                              minHeight: 40,
+                              borderRadius: 10,
+                              background: "var(--bg-elev2)",
+                              border: "1px solid var(--border)",
+                              cursor: "pointer",
+                              marginTop: 6,
+                              touchAction: "manipulation"
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={nextPending.completed}
+                              onChange={() => toggleMilestone(g.id, nextPending.id)}
+                              style={{ width: 18, height: 18, accentColor: g.color, cursor: "pointer", flexShrink: 0 }}
+                            />
+                            <span style={{ flex: 1, fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              <span style={{ color: "var(--accent)", fontWeight: 800, marginRight: 6 }}>Next:</span>
+                              {nextPending.title}
+                            </span>
+                            {nextPending.dueDate && (
+                              <span
+                                className="badge"
+                                style={{
+                                  fontSize: 10,
+                                  flexShrink: 0,
+                                  background: !nextPending.completed && new Date(nextPending.dueDate + "T23:59:59") < new Date() ? "#ef444418" : "var(--bg-elev)",
+                                  color: !nextPending.completed && new Date(nextPending.dueDate + "T23:59:59") < new Date() ? "var(--danger)" : "var(--text-muted)"
+                                }}
+                              >
+                                {nextPending.dueDate}
+                              </span>
+                            )}
+                          </label>
+                        );
+                      })()
+                    )
+                  ) : (
+                    /* Expanded: Full Milestone Checklist */
+                    <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                      {g.milestones.map(ms => (
+                        <label
+                          key={ms.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            padding: "8px 10px",
+                            minHeight: 40,
+                            borderRadius: 10,
+                            background: "var(--bg-elev2)",
+                            border: "1px solid var(--border)",
+                            cursor: "pointer",
+                            touchAction: "manipulation"
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={ms.completed}
+                            onChange={() => toggleMilestone(g.id, ms.id)}
+                            style={{ width: 18, height: 18, accentColor: g.color, cursor: "pointer", flexShrink: 0 }}
+                          />
+                          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, textDecoration: ms.completed ? "line-through" : "none", opacity: ms.completed ? 0.6 : 1, wordBreak: "break-word" }}>
+                            {ms.title}
+                          </span>
+                          {ms.dueDate && (
+                            <span
+                              className="badge"
+                              style={{
+                                fontSize: 10,
+                                flexShrink: 0,
+                                background: !ms.completed && new Date(ms.dueDate + "T23:59:59") < new Date() ? "#ef444418" : "var(--bg-elev)",
+                                color: !ms.completed && new Date(ms.dueDate + "T23:59:59") < new Date() ? "var(--danger)" : "var(--text-muted)"
+                              }}
+                            >
+                              {ms.dueDate}
+                            </span>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
-                  <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(g); setShowForm(true); }}>Edit</button>
-                  <button className="btn btn-sm btn-ghost" style={{ color: "var(--danger)" }} onClick={() => { if (confirm(`Delete goal “${g.title}”?`)) deleteGoal(g.id); }}>Delete</button>
+
+                <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
+                  <button className="btn btn-sm btn-ghost" style={{ minHeight: 32 }} onClick={() => { setEditing(g); setShowForm(true); }}>Edit</button>
+                  <button className="btn btn-sm btn-ghost" style={{ color: "var(--danger)", minHeight: 32 }} onClick={() => { if (confirm(`Delete goal “${g.title}”?`)) deleteGoal(g.id); }}>Delete</button>
                 </div>
               </div>
             </div>
@@ -169,8 +316,6 @@ export function GoalsView({ q }: { q: string }) {
           }}
         />
       )}
-
-      <style>{`@media(max-width:900px){ div[style*="repeat(2,1fr)"]{ grid-template-columns:1fr !important; } }`}</style>
     </div>
   );
 }

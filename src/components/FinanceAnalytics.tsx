@@ -49,9 +49,9 @@ export function SavingsRateCard({
   }
 
   return (
-    <div className="card" style={{ padding: 14, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+    <div className="card" style={{ padding: 12, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>
             Savings Rate
           </div>
@@ -60,17 +60,18 @@ export function SavingsRateCard({
             style={{
               background: badgeBg,
               color: badgeColor,
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 800,
               display: "inline-flex",
               alignItems: "center",
-              gap: 4
+              gap: 3,
+              padding: "1px 6px"
             }}
           >
             <span>{icon}</span> {badgeText}
           </span>
         </div>
-        <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4, color: badgeColor }}>
+        <div style={{ fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 900, marginTop: 4, color: badgeColor }}>
           {savingsRate !== null ? `${savingsRate > 0 ? "+" : ""}${savingsRate}%` : "—"}
         </div>
       </div>
@@ -85,9 +86,8 @@ export function SavingsRateCard({
             }}
           />
         </div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6, display: "flex", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6, display: "flex", justifyContent: "space-between", gap: 4, flexWrap: "wrap" }}>
           <span>{hasIncome ? (savedPaise >= 0 ? `Saved ${fmtINR(savedPaise)}` : `Deficit ${fmtINR(Math.abs(savedPaise))}`) : "No deposits"}</span>
-          <span style={{ fontSize: 11 }}>{monthLabel}</span>
         </div>
       </div>
     </div>

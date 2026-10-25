@@ -39,27 +39,103 @@ export function CommandPalette({ onClose, onNav }: { onClose: () => void; onNav:
   const activate = (it: { module: string }) => { onNav(it.module); onClose(); };
 
   return (
-    <div role="dialog" aria-modal="true" onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "start center", paddingTop: "18vh", zIndex: 60 }}>
-      <div onClick={e => e.stopPropagation()} className="card" style={{ width: "min(560px, 92vw)", overflow: "hidden", animation: "pop .16s ease" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-          <span style={{ opacity: .6 }}>⌘</span>
-          <input ref={inputRef} className="input" placeholder="Type to search — tasks, habits, goals, events, pages…" value={q} onChange={e => setQ(e.target.value)} onKeyDown={onKey} style={{ border: "none", background: "transparent", padding: 0, boxShadow: "none", flex: 1 }} />
-          <span className="kbd">ESC</span>
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,.55)",
+        backdropFilter: "blur(4px)",
+        WebkitBackdropFilter: "blur(4px)",
+        display: "grid",
+        placeItems: "start center",
+        padding: "clamp(10px, 12vh, 100px) 12px 16px",
+        zIndex: 60
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="card"
+        style={{
+          width: "min(560px, 100%)",
+          overflow: "hidden",
+          animation: "pop .16s ease",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.4)"
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
+          <span style={{ opacity: .7, fontSize: 16 }}>🔍</span>
+          <input
+            ref={inputRef}
+            className="input"
+            placeholder="Search tasks, habits, goals, events, pages…"
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            onKeyDown={onKey}
+            style={{ border: "none", background: "transparent", padding: 0, boxShadow: "none", flex: 1, fontSize: 15 }}
+          />
+          {q && (
+            <button
+              onClick={() => setQ("")}
+              className="btn btn-ghost btn-sm"
+              style={{ padding: "2px 8px", fontSize: 12 }}
+            >
+              Clear
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="btn btn-ghost btn-sm"
+            style={{ padding: "4px 8px", fontSize: 12, fontWeight: 700 }}
+          >
+            Close
+          </button>
         </div>
-        <div style={{ maxHeight: 360, overflow: "auto", padding: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ maxHeight: "min(360px, 50vh)", overflowY: "auto", padding: 8, display: "flex", flexDirection: "column", gap: 6 }}>
           {items.map((it, i) => (
-            <button key={i} onClick={() => { setIdx(i); activate(it); }} onKeyDown={onKey} style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--border)", background: i === active ? "var(--accent)" : "var(--bg-elev)", color: i === active ? "white" : "var(--text)", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <span style={{ fontWeight: 700, fontSize: 13 }}>{it.label}</span>
-                <span style={{ fontSize: 11, color: i === active ? "rgba(255,255,255,.8)" : "var(--text-muted)", fontWeight: 700, display: "block", marginTop: 2 }}>{it.sub}</span>
+            <button
+              key={i}
+              onClick={() => { setIdx(i); activate(it); }}
+              onKeyDown={onKey}
+              style={{
+                textAlign: "left",
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: i === active ? "var(--accent)" : "var(--bg-elev)",
+                color: i === active ? "white" : "var(--text)",
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <div style={{ minWidth: 0, flex: 1, paddingRight: 8 }}>
+                <span style={{ fontWeight: 700, fontSize: 13, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {it.label}
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: i === active ? "rgba(255,255,255,.8)" : "var(--text-muted)",
+                    fontWeight: 600,
+                    display: "block",
+                    marginTop: 2
+                  }}
+                >
+                  {it.sub}
+                </span>
               </div>
-              <span className="kbd" style={{ opacity: i === active ? 1 : .5 }}>↵</span>
+              <span className="kbd desktop-only" style={{ opacity: i === active ? 1 : .5 }}>↵</span>
             </button>
           ))}
-          {items.length === 0 && <div style={{ padding: 14 }}><Empty text="No results." /></div>}
+          {items.length === 0 && <div style={{ padding: 14 }}><Empty text="No results found." /></div>}
         </div>
-        <div style={{ padding: "8px 12px", borderTop: "1px solid var(--border)", fontSize: 11, color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
-          <span>↑↓ Navigate • Enter Select</span><span>Ctrl+K to toggle</span>
+        <div style={{ padding: "8px 14px", borderTop: "1px solid var(--border)", fontSize: 11, color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
+          <span>Jump to any module or item instantly</span>
+          <span className="desktop-only">Ctrl+K to toggle</span>
         </div>
       </div>
     </div>

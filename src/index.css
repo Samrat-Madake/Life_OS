@@ -92,3 +92,321 @@ a{color:inherit;text-decoration:none}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 @keyframes pop{0%{transform:scale(.96);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes slideUp{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
+
+/* LifeOS Design System Touch & Manipulation */
+button, input, select, textarea, a, .btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Responsive Utilities & Bottom Sheet Rules */
+:root {
+  --mobile-nav-h: 60px;
+}
+
+.lifeos-toast {
+  position: fixed;
+  right: 16px;
+  max-width: min(400px, calc(100vw - 32px));
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  font-weight: 700;
+  font-size: 13px;
+  animation: slideUp .2s ease;
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .lifeos-toast {
+    left: 16px;
+    right: 16px;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+  }
+
+  .desktop-only { display: none !important; }
+  
+  /* Prevent iOS zoom on input focus */
+  .input, .select, .textarea {
+    font-size: 16px;
+  }
+
+  /* Global Dialog to Mobile Bottom Sheet transformation */
+  div[role="dialog"] {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  div[role="dialog"] > .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    max-height: 88vh !important;
+    animation: sheetSlideUp .22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 16px)) !important;
+  }
+
+  /* Bottom sheet visual drag handle */
+  div[role="dialog"] > .card::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--border-strong);
+    margin: 4px auto 14px auto;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only { display: none !important; }
+}
+
+@keyframes sheetSlideUp {
+  0% { transform: translateY(100%); opacity: 0.5; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes drawerSlideIn {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+
+/* Shell Layout Breakpoint Rules */
+@media (max-width: 768px) {
+  aside.desktop-sidebar {
+    display: none !important;
+  }
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
+  .desktop-header-controls {
+    display: none !important;
+  }
+  .mobile-header-controls {
+    display: flex !important;
+  }
+  .dashboard-mockup-body {
+    flex-direction: column !important;
+  }
+  main.main-content {
+    padding-bottom: calc(var(--mobile-nav-h, 60px) + 24px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+  .mobile-header-controls {
+    display: none !important;
+  }
+  .desktop-header-controls {
+    display: flex !important;
+  }
+  .mobile-drawer-backdrop,
+  .mobile-drawer-sheet {
+    display: none !important;
+  }
+}
+
+/* Overview Dashboard Responsive Rules */
+.overview-hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.overview-main-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 12px;
+}
+
+.overview-donut-container {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .overview-hero-metrics {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .overview-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-donut-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+  .overview-donut-legend {
+    width: 100% !important;
+  }
+}
+
+/* Tasks & Kanban Responsive Rules */
+.kanban-board-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .kanban-board-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .kanban-col-hidden-mobile {
+    display: none !important;
+  }
+  .form-two-col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Habits Responsive Rules */
+.habits-main-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 12px;
+}
+
+.habits-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 1024px) {
+  .habits-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .habits-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Finance Responsive Rules */
+.finance-hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.finance-main-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 12px;
+}
+
+.finance-mobile-tabs {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .finance-hero-metrics {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .finance-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .finance-mobile-tabs {
+    display: flex !important;
+  }
+  .finance-col-hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .finance-hero-metrics {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .finance-hero-metrics .card {
+    padding: 10px !important;
+  }
+}
+
+/* Focus Studio Responsive Rules */
+.focus-main-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 12px;
+}
+
+.focus-soundscapes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .focus-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .focus-soundscapes-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+}
+
+/* Goals Responsive Rules */
+.goals-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.form-three-col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .goals-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-three-col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+
+
+

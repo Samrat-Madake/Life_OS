@@ -94,56 +94,84 @@ export function FocusStudio({ onToast }: { onToast: (s: string) => void }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1.1fr .9fr", gap: 12 }}>
-        <div className="card" style={{ padding: 18, textAlign: "center" }}>
+      <div className="focus-main-grid">
+        <div className="card" style={{ padding: "18px 16px", textAlign: "center" }}>
           <div className="badge" style={{ background: mode === "focus" ? "#7c6cff18" : "#22c55e18", color: mode === "focus" ? "var(--accent)" : "var(--success)", borderColor: mode === "focus" ? "#7c6cff30" : "#22c55e30" }}>
             {mode === "focus" ? "FOCUS" : "BREAK"} • {mode === "focus" ? focusM : breakM}m
           </div>
-          <div style={{ marginTop: 12, display: "grid", placeItems: "center" }}>
-            <div style={{ position: "relative", width: 220, height: 220 }}>
-              <svg width={220} height={220} viewBox="0 0 120 120">
+          <div style={{ marginTop: 14, display: "grid", placeItems: "center" }}>
+            <div style={{ position: "relative", width: "min(280px, max(200px, 45vw))", height: "min(280px, max(200px, 45vw))" }}>
+              <svg viewBox="0 0 120 120" style={{ width: "100%", height: "100%", display: "block" }}>
                 <circle cx={60} cy={60} r={52} fill="none" stroke="var(--bg-elev2)" strokeWidth={10} />
                 <circle cx={60} cy={60} r={52} fill="none" stroke={mode === "focus" ? "var(--accent)" : "var(--success)"} strokeWidth={10} strokeLinecap="round"
                   strokeDasharray={`${pct / 100 * 326} 326`} style={{ transform: "rotate(-90deg)", transformOrigin: "60px 60px", transition: "stroke-dasharray .4s ease" }} />
               </svg>
               <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: 44, fontWeight: 900, letterSpacing: -.04 + "em", fontVariantNumeric: "tabular-nums" }}>
+                  <div style={{ fontSize: "clamp(34px, 8.5vw, 46px)", fontWeight: 900, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>
                     {String(mm).padStart(2, "0")}:{String(ss).padStart(2, "0")}
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700 }}>{running ? "Running" : "Paused"} • {pct}%</div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, marginTop: 2 }}>{running ? "Running" : "Paused"} • {pct}%</div>
                 </div>
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 16, flexWrap: "wrap" }}>
             {!running ? (
-              <button className="btn btn-primary" onClick={() => {
-                if (!running && secondsLeft === totalForMode) {
-                  const id = uid();
-                  setSessionId(id);
-                }
-                setRunning(true);
-              }}>▶ Start</button>
+              <button
+                className="btn btn-primary"
+                style={{ minHeight: 46, minWidth: 120, fontSize: 15, fontWeight: 800, padding: "0 22px", touchAction: "manipulation" }}
+                onClick={() => {
+                  if (!running && secondsLeft === totalForMode) {
+                    const id = uid();
+                    setSessionId(id);
+                  }
+                  setRunning(true);
+                }}
+              >
+                ▶ Start
+              </button>
             ) : (
-              <button className="btn" onClick={() => setRunning(false)}>⏸ Pause</button>
+              <button
+                className="btn"
+                style={{ minHeight: 46, minWidth: 120, fontSize: 15, fontWeight: 800, background: "var(--warn)", color: "#000", borderColor: "var(--warn)", padding: "0 22px", touchAction: "manipulation" }}
+                onClick={() => setRunning(false)}
+              >
+                ⏸ Pause
+              </button>
             )}
-            <button className="btn" onClick={() => { setRunning(false); setSecondsLeft(totalForMode); }}>↺ Reset</button>
-            <button className="btn btn-ghost" onClick={() => { setRunning(false); setMode(m => m === "focus" ? "break" : "focus"); }}>Switch to {mode === "focus" ? "break" : "focus"}</button>
+            <button
+              className="btn"
+              style={{ minHeight: 46, minWidth: 90, fontSize: 14, fontWeight: 800, padding: "0 18px", touchAction: "manipulation" }}
+              onClick={() => { setRunning(false); setSecondsLeft(totalForMode); }}
+            >
+              ↺ Reset
+            </button>
+            <button
+              className="btn btn-ghost"
+              style={{ minHeight: 46, fontSize: 13, fontWeight: 700, padding: "0 14px", touchAction: "manipulation" }}
+              onClick={() => { setRunning(false); setMode(m => m === "focus" ? "break" : "focus"); }}
+            >
+              Switch to {mode === "focus" ? "break" : "focus"}
+            </button>
           </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>Focus</span>
-            <input type="range" min={5} max={60} value={focusM} onChange={e => setFocusM(Number(e.target.value))} />
-            <span className="mono" style={{ fontSize: 12, fontWeight: 800 }}>{focusM}m</span>
-            <span style={{ width: 1, height: 18, background: "var(--border)", margin: "0 6px" }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>Break</span>
-            <input type="range" min={3} max={30} value={breakM} onChange={e => setBreakM(Number(e.target.value))} />
-            <span className="mono" style={{ fontSize: 12, fontWeight: 800 }}>{breakM}m</span>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 14, alignItems: "center", flexWrap: "wrap", background: "var(--bg-elev2)", padding: "10px 14px", borderRadius: 12, border: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)" }}>Focus</span>
+              <input type="range" min={5} max={60} value={focusM} onChange={e => setFocusM(Number(e.target.value))} style={{ width: 95, accentColor: "var(--accent)" }} />
+              <span className="mono" style={{ fontSize: 12, fontWeight: 800, minWidth: 28 }}>{focusM}m</span>
+            </div>
+            <span style={{ width: 1, height: 18, background: "var(--border)", margin: "0 4px" }} className="desktop-only" />
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text-muted)" }}>Break</span>
+              <input type="range" min={3} max={30} value={breakM} onChange={e => setBreakM(Number(e.target.value))} style={{ width: 95, accentColor: "var(--success)" }} />
+              <span className="mono" style={{ fontSize: 12, fontWeight: 800, minWidth: 28 }}>{breakM}m</span>
+            </div>
           </div>
           <div style={{ marginTop: 12 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", display: "block", textAlign: "left" }}>
               Link to task (optional)
-              <select className="select" value={linkedTask} onChange={e => setLinkedTask(e.target.value)} style={{ marginTop: 6 }}>
+              <select className="select" value={linkedTask} onChange={e => setLinkedTask(e.target.value)} style={{ marginTop: 6, minHeight: 40 }}>
                 <option value="">No task</option>
                 {state.tasks.filter(t => t.status !== "done").slice(0, 20).map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
               </select>
@@ -151,8 +179,8 @@ export function FocusStudio({ onToast }: { onToast: (s: string) => void }) {
           </div>
           {/* Ambient Sound Selector */}
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--border)", textAlign: "left" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text)" }}>🎧 Ambient Sound</span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--text)" }}>🎧 Ambient Soundscapes</span>
               {ambient !== "none" && (
                 <span className="badge" style={{ background: "var(--accent-elev)", color: "var(--accent)", fontSize: 11, padding: "2px 8px" }}>
                   {running && mode === "focus" ? "Playing" : "Ready"}
@@ -160,7 +188,7 @@ export function FocusStudio({ onToast }: { onToast: (s: string) => void }) {
               )}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(68px, 1fr))", gap: 6 }}>
+            <div className="focus-soundscapes-grid">
               {SOUND_OPTIONS.map(s => {
                 const active = ambient === s.id;
                 return (
@@ -174,27 +202,31 @@ export function FocusStudio({ onToast }: { onToast: (s: string) => void }) {
                       alignItems: "center",
                       justifyContent: "center",
                       gap: 4,
+                      minHeight: 52,
                       padding: "8px 6px",
-                      borderRadius: 8,
-                      border: "1px solid " + (active ? "var(--accent)" : "var(--border)"),
-                      background: active ? "var(--bg-elev2)" : "transparent",
-                      color: active ? "var(--text)" : "var(--text-muted)",
+                      borderRadius: 10,
+                      border: "1.5px solid " + (active ? "var(--accent)" : "var(--border)"),
+                      background: active ? "var(--accent-glow)" : "var(--bg-elev2)",
+                      color: active ? "var(--accent)" : "var(--text-muted)",
                       cursor: "pointer",
                       fontSize: 11,
                       fontWeight: active ? 800 : 600,
+                      touchAction: "manipulation",
+                      boxShadow: active ? "0 2px 8px var(--accent-glow)" : "none",
                       transition: "all .15s ease"
                     }}
                   >
-                    <span style={{ fontSize: 16 }}>{s.icon}</span>
-                    <span>{s.label}</span>
+                    <span style={{ fontSize: 18 }}>{s.icon}</span>
+                    <span style={{ whiteSpace: "nowrap" }}>{s.label}</span>
                   </button>
                 );
               })}
             </div>
 
             {ambient !== "none" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)" }}>Volume</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, background: "var(--bg-elev2)", padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 15 }}>🔊</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)" }}>Volume</span>
                 <input
                   type="range"
                   min={0}
@@ -202,9 +234,10 @@ export function FocusStudio({ onToast }: { onToast: (s: string) => void }) {
                   step={0.05}
                   value={ambientVol}
                   onChange={e => setAmbientVol(Number(e.target.value))}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, accentColor: "var(--accent)", minHeight: 28 }}
+                  aria-label="Ambient sound volume"
                 />
-                <span className="mono" style={{ fontSize: 11, fontWeight: 800, minWidth: 32, textAlign: "right" }}>
+                <span className="mono" style={{ fontSize: 12, fontWeight: 800, minWidth: 36, textAlign: "right" }}>
                   {Math.round(ambientVol * 100)}%
                 </span>
               </div>
@@ -218,13 +251,15 @@ export function FocusStudio({ onToast }: { onToast: (s: string) => void }) {
           <div className="card" style={{ padding: 14 }}>
             <h3 style={{ fontWeight: 900, fontSize: 14 }}>Session history</h3>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>Total focus {minutesToHM(focusMinutesTotal)} • {state.focusSessions.filter(s => s.completed).length} completed</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10, maxHeight: 260, overflow: "auto" }}>
-              {[...state.focusSessions].sort((a, b) => b.startedAt.localeCompare(a.startedAt)).slice(0, 12).map(s => (
-                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, background: "var(--bg-elev2)", border: "1px solid var(--border)" }}>
-                  <span className="badge" style={{ background: s.completed ? "#22c55e18" : "#f59e0b18", color: s.completed ? "var(--success)" : "var(--warn)" }}>{s.completed ? "✓" : "○"} {s.durationMinutes}m</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 13 }}>{s.taskTitle || "Unlinked session"}</div>
-                    <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{new Date(s.startedAt).toLocaleString("en-IN")}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10, maxHeight: 280, overflowY: "auto" }}>
+              {[...state.focusSessions].sort((a, b) => b.startedAt.localeCompare(a.startedAt)).slice(0, 15).map(s => (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 10, background: "var(--bg-elev2)", border: "1px solid var(--border)" }}>
+                  <span className="badge" style={{ background: s.completed ? "#22c55e18" : "#f59e0b18", color: s.completed ? "var(--success)" : "var(--warn)", borderColor: s.completed ? "#22c55e30" : "#f59e0b30", fontWeight: 800, fontSize: 11, padding: "2px 8px", flexShrink: 0 }}>
+                    {s.completed ? "✓" : "○"} {s.durationMinutes}m
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.taskTitle || "Unlinked session"}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{new Date(s.startedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} • {new Date(s.startedAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</div>
                   </div>
                 </div>
               ))}
@@ -234,23 +269,24 @@ export function FocusStudio({ onToast }: { onToast: (s: string) => void }) {
 
           <div className="card" style={{ padding: 14 }}>
             <h3 style={{ fontWeight: 900, fontSize: 14 }}>Today's focus by hour (mock)</h3>
-            <div style={{ display: "flex", alignItems: "end", gap: 6, height: 90, marginTop: 10 }}>
-              {Array.from({ length: 8 }).map((_, i) => {
-                const h = 9 + i;
-                const isActive = new Date().getHours() === h;
-                const v = [20, 45, 10, 60, 30, 15, 40, 25][i];
-                return (
-                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                    <div style={{ width: "100%", height: Math.round(v / 60 * 70) + 10, background: isActive ? "var(--accent)" : "var(--bg-elev2)", border: "1px solid var(--border)", borderRadius: 8 }} />
-                    <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>{h}:00</span>
-                  </div>
-                );
-              })}
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
+              <div style={{ display: "flex", alignItems: "end", gap: 6, height: 90, marginTop: 10, minWidth: 260 }}>
+                {Array.from({ length: 8 }).map((_, i) => {
+                  const h = 9 + i;
+                  const isActive = new Date().getHours() === h;
+                  const v = [20, 45, 10, 60, 30, 15, 40, 25][i];
+                  return (
+                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                      <div style={{ width: "100%", height: Math.round(v / 60 * 70) + 10, background: isActive ? "var(--accent)" : "var(--bg-elev2)", border: "1px solid var(--border)", borderRadius: 8 }} />
+                      <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>{h}:00</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <style>{`@media(max-width:1000px){ div[style*="1.1fr .9fr"]{ grid-template-columns:1fr !important; } }`}</style>
     </div>
   );
 }

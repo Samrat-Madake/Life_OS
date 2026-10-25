@@ -91,7 +91,9 @@ export function AuthModal({ onClose, onToast }: { onClose: () => void; onToast: 
                 required
                 placeholder="e.g., Alex Carter"
                 value={name}
+                autoCapitalize="words"
                 onChange={e => setName(e.target.value)}
+                style={{ minHeight: 42, marginTop: 4 }}
               />
             </label>
           )}
@@ -101,10 +103,14 @@ export function AuthModal({ onClose, onToast }: { onClose: () => void; onToast: 
             <input
               className="input"
               type="email"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
               required
               placeholder="you@example.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              style={{ minHeight: 42, marginTop: 4 }}
             />
           </label>
 
@@ -113,11 +119,14 @@ export function AuthModal({ onClose, onToast }: { onClose: () => void; onToast: 
             <input
               className="input"
               type="password"
+              autoCapitalize="none"
+              autoCorrect="off"
               required
               minLength={6}
               placeholder="••••••••"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              style={{ minHeight: 42, marginTop: 4 }}
             />
           </label>
 
@@ -127,14 +136,14 @@ export function AuthModal({ onClose, onToast }: { onClose: () => void; onToast: 
             </div>
           )}
 
-          <div style={{ fontSize: 11, color: "var(--accent)", display: "flex", alignItems: "center", gap: 6, background: "rgba(124, 108, 255, 0.08)", padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(124, 108, 255, 0.15)" }}>
+          <div style={{ fontSize: 11, color: "var(--accent)", display: "flex", alignItems: "center", gap: 6, background: "rgba(124, 108, 255, 0.08)", padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(124, 108, 255, 0.15)", lineHeight: 1.4 }}>
             <span>🔒</span>
-            <span><strong>End-to-End Encrypted:</strong> Not even MongoDB admins can read your data.</span>
+            <span><strong>End-to-End Encrypted:</strong> Client-side AES-GCM encryption before sync.</span>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 6 }}>
-            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+            <button type="button" className="btn btn-ghost" style={{ minHeight: 42, padding: "0 16px" }} onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary" style={{ minHeight: 42, padding: "0 20px", fontWeight: 800 }} disabled={loading}>
               {loading ? "Connecting…" : mode === "login" ? "Sign In" : "Create Account"}
             </button>
           </div>
