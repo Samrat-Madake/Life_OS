@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Transaction } from "../types";
+import type { Transaction } from "../models";
 import { fmtINR } from "../utils";
 
 export function fmtINRCompact(paise: number): string {

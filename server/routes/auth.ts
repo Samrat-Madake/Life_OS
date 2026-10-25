@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
@@ -11,7 +12,7 @@ export const getJwtSecret = (): string => process.env.JWT_SECRET || "lifeos_supe
 // POST /api/auth/register
 router.post("/register", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, password, initialData } = req.body;
+    const { name, email, password, encryptionSalt } = req.body;
 
     if (!email || !password || !name) {
       res.status(400).json({ message: "Name, email and password are required" });
@@ -24,25 +25,26 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const salt = encryptionSalt || crypto.randomBytes(16).toString("base64");
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      passwordHash
+      passwordHash,
+      encryptionSalt: salt
     });
 
-    // Create fresh empty user data document for newly registered user
-    const currentMonth = new Date().toISOString().slice(0, 7);
+    // Create user data document for newly registered user
     await UserData.create({
       userId: user._id,
+      encryptedPayload: null,
+      iv: null,
+      version: 1,
       tasks: [],
       habits: [],
       habitLogs: [],
       transactions: [],
-      budgets: [
-        { id: "b1", category: "Dining", limitPaise: 1200000, month: currentMonth },
-        { id: "b2", category: "Shopping", limitPaise: 800000, month: currentMonth }
-      ],
+      budgets: [],
       events: [],
       goals: [],
       focusSessions: [],
@@ -57,6 +59,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
         id: user._id,
         name: user.name,
         email: user.email,
+        encryptionSalt: user.encryptionSalt,
         preferences: user.preferences
       }
     });
@@ -87,6 +90,12 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Ensure user has an encryption salt if legacy user
+    if (!user.encryptionSalt) {
+      user.encryptionSalt = crypto.randomBytes(16).toString("base64");
+      await user.save();
+    }
+
     const token = jwt.sign({ userId: user._id.toString() }, getJwtSecret(), { expiresIn: "30d" });
 
     res.json({
@@ -95,6 +104,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
         id: user._id,
         name: user.name,
         email: user.email,
+        encryptionSalt: user.encryptionSalt,
         preferences: user.preferences
       }
     });
@@ -118,6 +128,7 @@ router.get("/me", authMiddleware, async (req: AuthRequest, res: Response): Promi
         id: user._id,
         name: user.name,
         email: user.email,
+        encryptionSalt: user.encryptionSalt || "",
         preferences: user.preferences
       }
     });

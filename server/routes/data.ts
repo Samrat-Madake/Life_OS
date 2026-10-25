@@ -11,6 +11,9 @@ router.get("/state", authMiddleware, async (req: AuthRequest, res: Response): Pr
     if (!data) {
       data = await UserData.create({
         userId: req.userId,
+        encryptedPayload: null,
+        iv: null,
+        version: 1,
         tasks: [],
         habits: [],
         habitLogs: [],
@@ -24,6 +27,17 @@ router.get("/state", authMiddleware, async (req: AuthRequest, res: Response): Pr
       });
     }
 
+    // If client has an encrypted vault, return the ciphertext & IV directly
+    if (data.encryptedPayload && data.iv) {
+      res.json({
+        encryptedPayload: data.encryptedPayload,
+        iv: data.iv,
+        version: data.version || 1
+      });
+      return;
+    }
+
+    // Otherwise return legacy unencrypted state (for migration)
     res.json({
       tasks: data.tasks || [],
       habits: data.habits || [],
@@ -42,9 +56,41 @@ router.get("/state", authMiddleware, async (req: AuthRequest, res: Response): Pr
   }
 });
 
-// POST /api/data/sync - Sync/save full state from frontend
+// POST /api/data/sync - Sync/save state from frontend
 router.post("/sync", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const { encryptedPayload, iv, version } = req.body;
+
+    // Encrypted Vault Payload (Zero-Knowledge: MongoDB and server never see plaintext)
+    if (encryptedPayload && iv) {
+      const data = await UserData.findOneAndUpdate(
+        { userId: req.userId },
+        {
+          $set: {
+            userId: req.userId,
+            encryptedPayload,
+            iv,
+            version: version || 1,
+            // Purge plaintext arrays from MongoDB
+            tasks: [],
+            habits: [],
+            habitLogs: [],
+            transactions: [],
+            budgets: [],
+            subscriptions: [],
+            events: [],
+            goals: [],
+            focusSessions: []
+          }
+        },
+        { returnDocument: "after", upsert: true, setDefaultsOnInsert: true }
+      );
+
+      res.json({ success: true, updatedAt: data?.updatedAt || new Date() });
+      return;
+    }
+
+    // Legacy unencrypted sync fallback
     const {
       tasks,
       habits,
@@ -57,8 +103,6 @@ router.post("/sync", authMiddleware, async (req: AuthRequest, res: Response): Pr
       focusSessions,
       currency
     } = req.body;
-
-    console.log(`[CloudSync] Received state for user ${req.userId}: ${tasks?.length || 0} tasks, ${habits?.length || 0} habits, ${transactions?.length || 0} transactions, ${subscriptions?.length || 0} subscriptions`);
 
     const data = await UserData.findOneAndUpdate(
       { userId: req.userId },

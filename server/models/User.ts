@@ -8,6 +8,7 @@ export interface IUser extends Document {
     theme: "dark" | "light";
     currency: string;
   };
+  encryptionSalt?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,10 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: true,
       trim: true
+    },
+    encryptionSalt: {
+      type: String,
+      default: ""
     },
     preferences: {
       theme: { type: String, enum: ["dark", "light"], default: "dark" },

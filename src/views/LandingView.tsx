@@ -138,16 +138,7 @@ export function LandingView({ onToast }: { onToast: (msg: string) => void }) {
               letterSpacing: "-0.03em"
             }}
           >
-            Master your tasks, habits, and finances in{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #7c6cff 0%, #5eead4 50%, #f472b6 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent"
-              }}
-            >
-              one unified flow.
-            </span>
+            Master your tasks, habits, and finances in one unified flow.
           </h1>
 
           {/* Subtitle */}
@@ -622,8 +613,8 @@ export function LandingView({ onToast }: { onToast: (msg: string) => void }) {
                   {loading
                     ? "Authenticating…"
                     : authMode === "login"
-                    ? "Sign In →"
-                    : "Create Workspace →"}
+                      ? "Sign In →"
+                      : "Create Workspace →"}
                 </button>
               </div>
             </form>

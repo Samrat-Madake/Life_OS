@@ -55,8 +55,8 @@ export function AuthModal({ onClose, onToast }: { onClose: () => void; onToast: 
             </h3>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
               {mode === "login"
-                ? "Access your synced productivity workspace"
-                : "Back up your tasks, habits & finances to MongoDB Atlas"}
+                ? "Access your encrypted productivity workspace"
+                : "Zero-Knowledge encrypted backup to MongoDB Atlas"}
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
@@ -126,6 +126,11 @@ export function AuthModal({ onClose, onToast }: { onClose: () => void; onToast: 
               {err}
             </div>
           )}
+
+          <div style={{ fontSize: 11, color: "var(--accent)", display: "flex", alignItems: "center", gap: 6, background: "rgba(124, 108, 255, 0.08)", padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(124, 108, 255, 0.15)" }}>
+            <span>🔒</span>
+            <span><strong>End-to-End Encrypted:</strong> Not even MongoDB admins can read your data.</span>
+          </div>
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 6 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>

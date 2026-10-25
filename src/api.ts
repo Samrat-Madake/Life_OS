@@ -1,4 +1,13 @@
 import type { AppState, AuthUser } from "./models";
+import {
+  generateSalt,
+  deriveKeyFromPassword,
+  setCurrentKey,
+  getCurrentKey,
+  clearCurrentKey,
+  encryptState,
+  decryptState
+} from "./utils/crypto";
 
 const API_BASE = "http://localhost:5000/api";
 
@@ -8,10 +17,13 @@ export function getToken(): string | null {
 
 export function setToken(token: string | null) {
   if (token) localStorage.setItem("lifeos:token", token);
-  else localStorage.removeItem("lifeos:token");
+  else {
+    localStorage.removeItem("lifeos:token");
+    clearCurrentKey();
+  }
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 3000): Promise<Response> {
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 4000): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -26,10 +38,16 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutM
 
 export const api = {
   async register(name: string, email: string, password: string) {
+    // 1. Generate client-side salt and derive encryption key
+    const salt = generateSalt();
+    const key = await deriveKeyFromPassword(password, salt);
+    await setCurrentKey(key);
+
+    // 2. Register with backend (providing salt so it can be restored on future logins)
     const res = await fetchWithTimeout(`${API_BASE}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name, email, password, encryptionSalt: salt })
     }, 6000);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Registration failed");
@@ -37,6 +55,7 @@ export const api = {
   },
 
   async login(email: string, password: string) {
+    // 1. Authenticate with server
     const res = await fetchWithTimeout(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,6 +63,13 @@ export const api = {
     }, 6000);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Login failed");
+
+    // 2. Derive encryption key using user's salt and password
+    const user = data.user as AuthUser;
+    const salt = user.encryptionSalt || email; // fallback to email if legacy
+    const key = await deriveKeyFromPassword(password, salt);
+    await setCurrentKey(key);
+
     return data as { token: string; user: AuthUser };
   },
 
@@ -70,13 +96,32 @@ export const api = {
     try {
       const res = await fetchWithTimeout(`${API_BASE}/data/state`, {
         headers: { Authorization: `Bearer ${token}` }
-      }, 3000);
+      }, 4000);
       if (!res.ok) {
         if (res.status === 401 || res.status === 403 || res.status === 404) setToken(null);
         return null;
       }
-      return await res.json();
-    } catch {
+      const data = await res.json();
+
+      // Check if server returned an encrypted vault payload
+      if (data && data.encryptedPayload && data.iv) {
+        const key = await getCurrentKey();
+        if (!key) {
+          console.warn("[E2EE] Encrypted cloud data received, but local session encryption key is missing.");
+          return null;
+        }
+        try {
+          return await decryptState(data.encryptedPayload, data.iv, key);
+        } catch (decryptErr) {
+          console.error("[E2EE] Failed to decrypt state payload:", decryptErr);
+          throw new Error("Failed to decrypt cloud data. Check your credentials.");
+        }
+      }
+
+      // Legacy unencrypted response fallback
+      return data as AppState;
+    } catch (err) {
+      console.error("[CloudFetch] Error fetching state:", err);
       return null;
     }
   },
@@ -84,15 +129,29 @@ export const api = {
   async syncCloudState(state: AppState): Promise<{ ok: boolean; error?: string }> {
     const token = getToken();
     if (!token) return { ok: false, error: "Not authenticated" };
+
     try {
+      let bodyData: any;
+      const key = await getCurrentKey();
+
+      if (key) {
+        // Zero-Knowledge Encrypted State Vault: Encrypt before sending over the wire
+        const { encryptedPayload, iv } = await encryptState(state, key);
+        bodyData = { encryptedPayload, iv, version: 1 };
+      } else {
+        // Fallback for unencrypted legacy sessions
+        bodyData = state;
+      }
+
       const res = await fetchWithTimeout(`${API_BASE}/data/sync`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(state)
-      });
+        body: JSON.stringify(bodyData)
+      }, 5000);
+
       if (!res.ok) {
         if (res.status === 401) {
           setToken(null);

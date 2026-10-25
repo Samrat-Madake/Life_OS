@@ -259,8 +259,8 @@ export default function App() {
                   <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {user.name}
                   </div>
-                  <div style={{ fontSize: 10, color: isSyncing ? "var(--accent)" : syncError ? "#ef4444" : "var(--text-muted)" }}>
-                    {isSyncing ? "● Syncing..." : syncError ? "⚠ Offline" : "☁ Cloud active"}
+                  <div style={{ fontSize: 10, color: isSyncing ? "var(--accent)" : syncError ? "#ef4444" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}>
+                    {isSyncing ? "● Encrypting & Syncing..." : syncError ? "⚠ Offline" : "🔒 E2EE Synced"}
                   </div>
                 </div>
               )}

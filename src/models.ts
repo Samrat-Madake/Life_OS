@@ -124,6 +124,7 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
+  encryptionSalt?: string;
   preferences?: {
     theme?: "dark" | "light";
     currency?: string;
