@@ -130,22 +130,24 @@ export default function App() {
             height: "var(--topbar-h)",
             display: "flex",
             alignItems: "center",
-            gap: 10,
-            padding: collapsed ? "0 14px" : "0 16px",
+            justifyContent: collapsed ? "center" : "flex-start",
+            gap: collapsed ? 6 : 10,
+            padding: collapsed ? "0 8px" : "0 16px",
             borderBottom: "1px solid var(--border)"
           }}
         >
           <div
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
+              width: 30,
+              height: 30,
+              borderRadius: 9,
               background: "linear-gradient(135deg,#7c6cff,#5eead4)",
               display: "grid",
               placeItems: "center",
               color: "white",
               fontWeight: 800,
-              fontSize: 14
+              fontSize: 13,
+              flexShrink: 0
             }}
           >
             L
@@ -156,27 +158,37 @@ export default function App() {
               <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>Personal Command Center</div>
             </div>
           )}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-            <button className="btn btn-ghost btn-sm" aria-label="Toggle sidebar" onClick={() => setCollapsed(v => !v)}>
+          <div style={{ marginLeft: collapsed ? 0 : "auto", display: "flex" }}>
+            <button
+              className="btn btn-ghost btn-sm"
+              aria-label="Toggle sidebar"
+              onClick={() => setCollapsed(v => !v)}
+              style={{ padding: "4px 6px", fontSize: 12 }}
+            >
               {collapsed ? "»" : "«"}
             </button>
           </div>
         </div>
 
-        <nav style={{ padding: 10, display: "flex", flexDirection: "column", gap: 4, flex: 1, overflowY: "auto" }}>
+        <nav style={{ padding: collapsed ? "10px 4px" : "10px", display: "flex", flexDirection: "column", gap: 4, flex: 1, overflowY: "auto" }}>
           {nav.map(n => (
             <button
               key={n.id}
               onClick={() => { setView(n.id); setMobileOpen(false); }}
+              title={collapsed ? n.label : undefined}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                padding: collapsed ? "10px 12px" : "10px 12px",
+                justifyContent: collapsed ? "center" : "flex-start",
+                gap: collapsed ? 0 : 12,
+                padding: collapsed ? "0" : "10px 12px",
+                width: collapsed ? "42px" : "100%",
+                height: collapsed ? "42px" : "auto",
+                margin: collapsed ? "2px auto" : "0",
                 borderRadius: 10,
-                border: "1px solid " + (view === n.id ? "var(--border-strong)" : "transparent"),
-                background: view === n.id ? "var(--bg-elev2)" : "transparent",
-                color: view === n.id ? "var(--text)" : "var(--text-muted)",
+                border: "1px solid " + (view === n.id ? (collapsed ? "transparent" : "var(--border-strong)") : "transparent"),
+                background: view === n.id ? (collapsed ? "var(--accent)" : "var(--bg-elev2)") : "transparent",
+                color: view === n.id ? (collapsed ? "white" : "var(--text)") : "var(--text-muted)",
                 fontWeight: 700,
                 fontSize: 13,
                 cursor: "pointer",
@@ -185,14 +197,14 @@ export default function App() {
             >
               <span
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: collapsed ? 24 : 22,
+                  height: collapsed ? 24 : 22,
                   display: "grid",
                   placeItems: "center",
                   borderRadius: 7,
-                  background: view === n.id ? "var(--accent)" : "var(--bg-elev2)",
-                  color: view === n.id ? "white" : "var(--text-muted)",
-                  fontSize: 12
+                  background: collapsed ? "transparent" : (view === n.id ? "var(--accent)" : "var(--bg-elev2)"),
+                  color: collapsed ? (view === n.id ? "white" : "var(--text-muted)") : (view === n.id ? "white" : "var(--text-muted)"),
+                  fontSize: collapsed ? 16 : 12
                 }}
               >
                 {n.icon}
@@ -222,26 +234,27 @@ export default function App() {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                padding: collapsed ? "6px 0" : "8px 10px",
+                padding: collapsed ? "8px 0" : "8px 10px",
                 borderRadius: 8,
-                background: "var(--bg-elev)",
+                background: collapsed ? "transparent" : "var(--bg-elev)",
                 justifyContent: collapsed ? "center" : "flex-start"
               }}
             >
               <div
                 style={{
-                  width: 26,
-                  height: 26,
+                  width: collapsed ? 32 : 26,
+                  height: collapsed ? 32 : 26,
                   borderRadius: "50%",
                   background: "linear-gradient(135deg, var(--accent), #8b5cf6)",
                   color: "#fff",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 12,
+                  fontSize: collapsed ? 13 : 12,
                   fontWeight: 800,
                   flexShrink: 0
                 }}
+                title={collapsed ? `${user.name} (${user.email})` : undefined}
               >
                 {user.name.charAt(0).toUpperCase()}
               </div>
