@@ -1,4 +1,4 @@
-import type { AppState, AuthUser } from "./models";
+import type { AppState, AuthUser, QuoteItem, QuoteCardStyle } from "./models";
 import {
   generateSalt,
   deriveKeyFromPassword,
@@ -182,5 +182,48 @@ export const api = {
     } catch (err: any) {
       return { ok: false, dbConnected: false, message: err?.message || "Offline" };
     }
+  },
+
+  async getQuotes(category?: string, search?: string): Promise<QuoteItem[]> {
+    try {
+      const params = new URLSearchParams();
+      if (category && category !== "All") params.append("category", category);
+      if (search && search.trim()) params.append("search", search.trim());
+      const queryStr = params.toString() ? `?${params.toString()}` : "";
+      
+      const res = await fetchWithTimeout(`${API_BASE}/quotes${queryStr}`, {}, 12000);
+      if (!res.ok) throw new Error("Failed to load quotes");
+      return (await res.json()) as QuoteItem[];
+    } catch (err) {
+      console.error("[Quotes] Fetch error:", err);
+      return [];
+    }
+  },
+
+  async createQuote(payload: {
+    text: string;
+    author?: string;
+    category?: string;
+    cardStyle?: QuoteCardStyle;
+  }): Promise<QuoteItem> {
+    const res = await fetchWithTimeout(`${API_BASE}/quotes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }, 15000);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to post quote");
+    return data as QuoteItem;
+  },
+
+  async deleteQuote(id: string): Promise<boolean> {
+    const res = await fetchWithTimeout(`${API_BASE}/quotes/${id}`, {
+      method: "DELETE"
+    }, 15000);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || "Failed to delete quote");
+    }
+    return true;
   }
 };

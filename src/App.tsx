@@ -12,6 +12,7 @@ import { FocusStudio } from "./views/FocusStudio";
 import { CalendarView } from "./views/CalendarView";
 import { GoalsView } from "./views/GoalsView";
 import { LandingView } from "./views/LandingView";
+import { QuotesView } from "./views/QuotesView";
 
 export default function App() {
   const { theme, setTheme, state, user, authLoading, logout, isSyncing, syncError } = useStore();
@@ -452,6 +453,7 @@ export default function App() {
           {view === "focus" && <FocusStudio onToast={addToast} />}
           {view === "calendar" && <CalendarView q={q} />}
           {view === "goals" && <GoalsView q={q} />}
+          {view === "quotes" && <QuotesView q={q} onToast={addToast} />}
         </main>
 
         {/* Mobile Off-Canvas Slide-Out Drawer */}
@@ -718,7 +720,7 @@ export default function App() {
               height: "100%",
               background: "transparent",
               border: "none",
-              color: ["focus", "calendar", "goals"].includes(view) || mobileOpen ? "var(--accent)" : "var(--text-muted)",
+              color: ["focus", "calendar", "goals", "quotes"].includes(view) || mobileOpen ? "var(--accent)" : "var(--text-muted)",
               cursor: "pointer",
               padding: "6px 0",
               transition: "color .15s"
@@ -729,7 +731,7 @@ export default function App() {
                 width: 24,
                 height: 24,
                 borderRadius: 6,
-                background: ["focus", "calendar", "goals"].includes(view) || mobileOpen ? "rgba(124, 108, 255, 0.15)" : "transparent",
+                background: ["focus", "calendar", "goals", "quotes"].includes(view) || mobileOpen ? "rgba(124, 108, 255, 0.15)" : "transparent",
                 display: "grid",
                 placeItems: "center",
                 fontSize: 14,

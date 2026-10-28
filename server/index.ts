@@ -4,6 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/auth";
 import dataRoutes from "./routes/data";
+import quotesRoutes from "./routes/quotes";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,6 +55,7 @@ app.get("/", (_req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/data", dataRoutes);
+app.use("/api/quotes", quotesRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({

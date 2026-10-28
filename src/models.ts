@@ -132,3 +132,26 @@ export type AuthUser = {
 };
 
 export type ActivityItem = { id:string; time:string; label:string; sub?:string; kind:"task"|"habit"|"focus"|"finance"|"calendar"|"goal" };
+
+export type QuoteCardStyle =
+  | "terracotta-badge"
+  | "dotted-circle"
+  | "mint-banner"
+  | "lavender-bubble"
+  | "dark-circle"
+  | "peach-card"
+  | "dotted-border"
+  | "pill-frame"
+  | "ribbon-tag"
+  | "notched-banner"
+  | "minimal-ring";
+
+export type QuoteItem = {
+  _id: string;
+  text: string;
+  author: string;
+  category: string;
+  cardStyle: QuoteCardStyle;
+  createdAt: string;
+  updatedAt?: string;
+};

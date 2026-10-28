@@ -406,6 +406,36 @@ button, input, select, textarea, a, .btn {
   }
 }
 
+/* Quotes Grid & Interactive Rules */
+.quotes-masonry-grid {
+  columns: 3 320px;
+  column-gap: 20px;
+}
+
+.quotes-masonry-grid > * {
+  break-inside: avoid;
+  margin-bottom: 20px;
+  display: inline-block;
+  width: 100%;
+}
+
+.quote-card-actions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+div:hover > .quote-card-actions,
+div:focus-within > .quote-card-actions {
+  opacity: 1 !important;
+}
+
+@media (hover: none) {
+  .quote-card-actions {
+    opacity: 0.8 !important;
+  }
+}
+
+
 
 
 

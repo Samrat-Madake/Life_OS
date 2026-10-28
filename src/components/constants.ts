@@ -11,7 +11,7 @@ export const statusLabel: Record<string, string> = {
   done: "Done"
 };
 
-export type View = "overview" | "tasks" | "habits" | "finance" | "focus" | "calendar" | "goals";
+export type View = "overview" | "tasks" | "habits" | "finance" | "focus" | "calendar" | "goals" | "quotes";
 
 export const nav: { id: View; label: string; icon: string }[] = [
   { id: "overview", label: "Overview", icon: "◍" },
@@ -21,4 +21,5 @@ export const nav: { id: View; label: string; icon: string }[] = [
   { id: "focus", label: "Focus", icon: "◎" },
   { id: "calendar", label: "Calendar", icon: "▦" },
   { id: "goals", label: "Goals", icon: "⬢" },
+  { id: "quotes", label: "Quotes", icon: "❞" },
 ];
