@@ -14,6 +14,73 @@ import { GoalsView } from "./views/GoalsView";
 import { LandingView } from "./views/LandingView";
 import { QuotesView } from "./views/QuotesView";
 
+export function NavIcon({ id, size = 18 }: { id: View; size?: number }) {
+  switch (id) {
+    case "overview":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+      );
+    case "tasks":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+      );
+    case "habits":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z" />
+        </svg>
+      );
+    case "finance":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2.5" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+          <circle cx="16" cy="15" r="1.5" fill="currentColor" />
+        </svg>
+      );
+    case "focus":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+        </svg>
+      );
+    case "calendar":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      );
+    case "goals":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+          <line x1="4" y1="22" x2="4" y2="15" />
+        </svg>
+      );
+    case "quotes":
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+        </svg>
+      );
+    default:
+      return <span>◍</span>;
+  }
+}
+
 export default function App() {
   const { theme, setTheme, state, user, authLoading, logout, isSyncing, syncError } = useStore();
   const [view, setView] = useState<View>("overview");
@@ -111,7 +178,7 @@ export default function App() {
         aria-label="Sidebar"
         className={`desktop-sidebar ${collapsed ? "collapsed" : ""}`}
         style={{
-          width: collapsed ? "var(--sidebar-collapsed)" : "var(--sidebar-w)",
+          width: collapsed ? 68 : 240,
           flexShrink: 0,
           position: "sticky",
           top: 0,
@@ -120,167 +187,348 @@ export default function App() {
           borderRight: "1px solid var(--border)",
           display: "flex",
           flexDirection: "column",
-          transition: "width .2s ease",
+          transition: "width 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
           zIndex: 20,
           overflow: "hidden"
         }}
       >
+        {/* Brand Header */}
         <div
           style={{
             height: "var(--topbar-h)",
             display: "flex",
             alignItems: "center",
-            gap: 10,
-            padding: collapsed ? "0 14px" : "0 16px",
+            justifyContent: collapsed ? "center" : "space-between",
+            padding: collapsed ? "0" : "0 14px",
             borderBottom: "1px solid var(--border)"
           }}
         >
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              background: "linear-gradient(135deg,#7c6cff,#5eead4)",
-              display: "grid",
-              placeItems: "center",
-              color: "white",
-              fontWeight: 800,
-              fontSize: 14
-            }}
-          >
-            L
-          </div>
-          {!collapsed && (
-            <div style={{ lineHeight: 1 }}>
-              <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: -.02 + "em" }}>LifeOS</div>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>Personal Command Center</div>
-            </div>
-          )}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-            <button className="btn btn-ghost btn-sm" aria-label="Toggle sidebar" onClick={() => setCollapsed(v => !v)}>
-              {collapsed ? "»" : "«"}
-            </button>
-          </div>
-        </div>
-
-        <nav style={{ padding: 10, display: "flex", flexDirection: "column", gap: 4, flex: 1, overflowY: "auto" }}>
-          {nav.map(n => (
+          {collapsed ? (
             <button
-              key={n.id}
-              onClick={() => { setView(n.id); setMobileOpen(false); }}
+              onClick={() => setCollapsed(false)}
+              title="Expand sidebar"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: collapsed ? "10px 12px" : "10px 12px",
-                borderRadius: 10,
-                border: "1px solid " + (view === n.id ? "var(--border-strong)" : "transparent"),
-                background: view === n.id ? "var(--bg-elev2)" : "transparent",
-                color: view === n.id ? "var(--text)" : "var(--text-muted)",
-                fontWeight: 700,
-                fontSize: 13,
+                width: 38,
+                height: 38,
+                borderRadius: 11,
+                background: "linear-gradient(135deg, #7c6cff, #5eead4)",
+                display: "grid",
+                placeItems: "center",
+                color: "white",
+                fontWeight: 900,
+                fontSize: 16,
+                border: "none",
                 cursor: "pointer",
-                textAlign: "left"
+                boxShadow: "0 4px 14px rgba(124, 108, 255, 0.3)",
+                transition: "transform 0.15s"
               }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.06)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
             >
-              <span
+              L
+            </button>
+          ) : (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 9,
+                    background: "linear-gradient(135deg, #7c6cff, #5eead4)",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "white",
+                    fontWeight: 900,
+                    fontSize: 14,
+                    boxShadow: "0 3px 10px rgba(124, 108, 255, 0.3)"
+                  }}
+                >
+                  L
+                </div>
+                <div style={{ lineHeight: 1.15 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: "-0.02em" }}>LifeOS</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-muted)", fontWeight: 600 }}>Command Center</div>
+                </div>
+              </div>
+              <button
+                className="btn btn-ghost btn-sm"
+                aria-label="Collapse sidebar"
+                onClick={() => setCollapsed(true)}
+                title="Collapse sidebar"
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: 28,
+                  height: 28,
+                  padding: 0,
                   display: "grid",
                   placeItems: "center",
                   borderRadius: 7,
-                  background: view === n.id ? "var(--accent)" : "var(--bg-elev2)",
-                  color: view === n.id ? "white" : "var(--text-muted)",
-                  fontSize: 12
+                  color: "var(--text-muted)",
+                  fontSize: 18,
+                  lineHeight: 1
                 }}
               >
-                {n.icon}
-              </span>
-              {!collapsed && <span>{n.label}</span>}
-              {!collapsed && view === n.id && <span style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: 99, background: "var(--accent)" }} />}
-            </button>
-          ))}
-          {!collapsed && (
-            <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: "var(--card)", border: "1px solid var(--border)" }}>
-              <div style={{ fontWeight: 800, fontSize: 12 }}>Pro tip</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, lineHeight: 1.4 }}>
-                Press <span className="kbd">Ctrl</span> + <span className="kbd">K</span> to jump anywhere instantly.
-              </div>
-              <button className="btn btn-primary btn-sm" style={{ marginTop: 10, width: "100%" }} onClick={() => setPalette(true)}>
-                Open palette
+                ‹
               </button>
+            </>
+          )}
+        </div>
+
+        {/* Navigation Items */}
+        <nav
+          style={{
+            padding: collapsed ? "12px 6px" : "12px 10px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
+            flex: 1,
+            overflowY: "auto"
+          }}
+        >
+          {!collapsed && (
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                color: "var(--text-faint)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                padding: "4px 10px 6px"
+              }}
+            >
+              Workspace
             </div>
+          )}
+
+          {nav.map(n => {
+            const isActive = view === n.id;
+            return (
+              <button
+                key={n.id}
+                onClick={() => {
+                  setView(n.id);
+                  setMobileOpen(false);
+                }}
+                title={collapsed ? n.label : undefined}
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: collapsed ? "center" : "flex-start",
+                  gap: 12,
+                  padding: collapsed ? "10px 0" : "9px 12px",
+                  borderRadius: 9,
+                  border: "none",
+                  background: isActive ? "rgba(124, 108, 255, 0.12)" : "transparent",
+                  color: isActive ? "var(--accent)" : "var(--text-muted)",
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: 13.5,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  width: "100%",
+                  transition: "all 0.15s ease"
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "var(--bg-elev)";
+                    e.currentTarget.style.color = "var(--text)";
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "var(--text-muted)";
+                  }
+                }}
+              >
+                {/* Active indicator bar on left when unfolded */}
+                {isActive && !collapsed && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 7,
+                      bottom: 7,
+                      width: 3.5,
+                      borderRadius: "0 4px 4px 0",
+                      background: "var(--accent)"
+                    }}
+                  />
+                )}
+
+                <span
+                  style={{
+                    display: "grid",
+                    placeItems: "center",
+                    flexShrink: 0,
+                    color: isActive ? "var(--accent)" : "currentColor",
+                    transition: "transform 0.15s"
+                  }}
+                >
+                  <NavIcon id={n.id} size={18} />
+                </span>
+
+                {!collapsed && (
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {n.label}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+
+          {/* Quick Search Shortcut Pill */}
+          {!collapsed && (
+            <button
+              onClick={() => setPalette(true)}
+              style={{
+                marginTop: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "8px 12px",
+                borderRadius: 9,
+                border: "1px dashed var(--border-strong)",
+                background: "var(--bg-elev)",
+                color: "var(--text-muted)",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.15s"
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = "var(--accent)";
+                e.currentTarget.style.color = "var(--text)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = "var(--border-strong)";
+                e.currentTarget.style.color = "var(--text-muted)";
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span>🔍</span>
+                <span>Search</span>
+              </div>
+              <span className="kbd" style={{ fontSize: 10 }}>Ctrl K</span>
+            </button>
           )}
         </nav>
 
-        <div style={{ padding: 10, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 8 }}>
-          {!collapsed && <div style={{ fontSize: 11, color: "var(--text-faint)", fontWeight: 700, letterSpacing: .06 + "em" }}>ACCOUNT & CLOUD</div>}
+        {/* Footer Account Section */}
+        <div
+          style={{
+            padding: collapsed ? "10px 6px" : "12px 12px",
+            borderTop: "1px solid var(--border)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            background: "var(--bg-soft)"
+          }}
+        >
           {user ? (
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-                padding: collapsed ? "6px 0" : "8px 10px",
-                borderRadius: 8,
-                background: "var(--bg-elev)",
-                justifyContent: collapsed ? "center" : "flex-start"
+                gap: 10,
+                padding: collapsed ? "4px 0" : "8px 10px",
+                borderRadius: 10,
+                background: collapsed ? "transparent" : "var(--bg-elev)",
+                justifyContent: collapsed ? "center" : "flex-start",
+                border: collapsed ? "none" : "1px solid var(--border)"
               }}
             >
-              <div
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, var(--accent), #8b5cf6)",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  flexShrink: 0
-                }}
-              >
-                {user.name.charAt(0).toUpperCase()}
+              {/* Avatar Initial with Status Dot */}
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, var(--accent), #8b5cf6)",
+                    color: "#fff",
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: 12.5,
+                    fontWeight: 800,
+                    boxShadow: "0 2px 6px rgba(124, 108, 255, 0.3)"
+                  }}
+                  title={collapsed ? `${user.name} (${user.email})` : undefined}
+                >
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: -1,
+                    right: -1,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: syncError ? "var(--danger)" : "var(--success)",
+                    border: "1.5px solid var(--bg-soft)"
+                  }}
+                />
               </div>
+
               {!collapsed && (
-                <div style={{ flex: 1, minWidth: 0, lineHeight: 1.2 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      color: "var(--text)"
+                    }}
+                  >
                     {user.name}
                   </div>
-                  <div style={{ fontSize: 10, color: isSyncing ? "var(--accent)" : syncError ? "#ef4444" : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}>
-                    {isSyncing ? "● Encrypting & Syncing..." : syncError ? "⚠ Offline" : "Synced"}
+                  <div
+                    style={{
+                      fontSize: 10.5,
+                      color: syncError ? "var(--danger)" : isSyncing ? "var(--accent)" : "var(--text-muted)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4
+                    }}
+                  >
+                    {isSyncing ? "Syncing…" : syncError ? "Offline" : "Cloud Synced"}
                   </div>
                 </div>
               )}
+
               {!collapsed && (
                 <button
                   className="btn btn-ghost btn-sm"
-                  onClick={() => { logout(); addToast("Signed out"); }}
+                  onClick={() => {
+                    logout();
+                    addToast("Signed out");
+                  }}
                   title="Sign out"
-                  style={{ padding: "2px 6px", fontSize: 11 }}
+                  style={{
+                    padding: "4px 6px",
+                    fontSize: 12,
+                    color: "var(--text-muted)",
+                    borderRadius: 6
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "var(--danger)")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}
                 >
-                  🚪
+                  ✕
                 </button>
               )}
             </div>
           ) : (
             <button
               className="btn btn-primary btn-sm"
-              style={{ justifyContent: collapsed ? "center" : "flex-start" }}
+              style={{ justifyContent: "center", width: "100%", fontSize: 12 }}
               onClick={() => setShowAuthModal(true)}
               title="Sign In / Register"
             >
-              ☁ {!collapsed && "Sign In / Sync"}
+              ☁ {!collapsed && "Sign In"}
             </button>
-          )}
-
-          {!collapsed && (
-            <div style={{ fontSize: 11, color: "var(--text-faint)" }}>
-              {user ? `Cloud: ${user.email}` : "v1.0 • Local-first"} • {state.tasks.length} tasks
-            </div>
           )}
         </div>
       </aside>
@@ -545,17 +793,17 @@ export default function App() {
                     >
                       <span
                         style={{
-                          width: 26,
-                          height: 26,
+                          width: 28,
+                          height: 28,
                           display: "grid",
                           placeItems: "center",
                           borderRadius: 8,
-                          background: isActive ? "var(--accent)" : "var(--bg-elev2)",
-                          color: isActive ? "white" : "var(--text-muted)",
+                          background: isActive ? "rgba(124, 108, 255, 0.15)" : "var(--bg-elev2)",
+                          color: isActive ? "var(--accent)" : "var(--text-muted)",
                           fontSize: 13
                         }}
                       >
-                        {n.icon}
+                        <NavIcon id={n.id} size={18} />
                       </span>
                       <span>{n.label}</span>
                       {isActive && (
@@ -697,11 +945,10 @@ export default function App() {
                     background: isActive ? "rgba(124, 108, 255, 0.15)" : "transparent",
                     display: "grid",
                     placeItems: "center",
-                    fontSize: 14,
-                    fontWeight: 800
+                    color: isActive ? "var(--accent)" : "currentColor"
                   }}
                 >
-                  {item.icon}
+                  <NavIcon id={item.id} size={16} />
                 </span>
                 <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600 }}>{item.label}</span>
               </button>
