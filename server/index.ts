@@ -17,17 +17,21 @@ const allowedOrigins = [
 ];
 
 if (process.env.CLIENT_ORIGIN) {
-  const configured = process.env.CLIENT_ORIGIN.split(",").map(o => o.trim()).filter(Boolean);
+  const configured = process.env.CLIENT_ORIGIN
+    .split(",")
+    .map(o => o.trim().replace(/\/$/, ""))
+    .filter(Boolean);
   allowedOrigins.push(...configured);
 }
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (e.g. health checks, curl, cron pings)
+    // Allow non-browser requests (e.g. health checks, curl, server-to-server pings)
     if (!origin) return callback(null, true);
 
-    const isExplicitlyAllowed = allowedOrigins.includes(origin);
-    const isVercelDomain = /^https:\/\/[a-z0-9\-]+\.vercel\.app$/i.test(origin);
+    const cleanOrigin = origin.replace(/\/$/, "");
+    const isExplicitlyAllowed = allowedOrigins.includes(cleanOrigin);
+    const isVercelDomain = /^https:\/\/[a-z0-9\-]+\.vercel\.app$/i.test(cleanOrigin);
     const isDev = process.env.NODE_ENV !== "production";
 
     if (isExplicitlyAllowed || isVercelDomain || isDev) {

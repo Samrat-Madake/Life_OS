@@ -12,7 +12,7 @@ import {
 const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
 const API_BASE = rawApiUrl
   ? (rawApiUrl.endsWith("/api") ? rawApiUrl.replace(/\/$/, "") : `${rawApiUrl.replace(/\/$/, "")}/api`)
-  : "http://localhost:5000/api";
+  : (import.meta.env.PROD ? "/api" : "http://localhost:5000/api");
 
 export function getToken(): string | null {
   return localStorage.getItem("lifeos:token");
